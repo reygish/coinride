@@ -1,6 +1,6 @@
 "use client";
 
-import { PredictionResponse } from "@/lib/dto/predictionResponse";
+import { classifyTransaction } from "@/lib/actions/classifyTransaction";
 import { useState } from "react";
 
 export default function Page() {
@@ -8,19 +8,11 @@ export default function Page() {
   const [result, setResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     setLoading(true);
     setResult(null);
-
-    const res = await fetch("/api/predict", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description }),
-    });
-
-    const json = await res.json();
-    const category = (json.data as PredictionResponse[])[0].category;
+    const category = await classifyTransaction(description)
     setResult(category);
     setLoading(false);
   }
