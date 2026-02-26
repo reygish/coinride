@@ -1,4 +1,8 @@
-# 💰 SmartSpend — AI-Powered Money Management App
+<p align="center">
+  <img src="./app/icon.png" alt="CoinRide Logo" width="100"/>
+</p>
+
+# CoinRide — AI-Powered Money Management App
 
 A personal finance tracker built with **Next.js** and **Supabase**, featuring an AI model hosted on **Hugging Face Spaces** that automatically classifies your transactions into categories.
 
