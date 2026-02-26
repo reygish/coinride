@@ -50,8 +50,8 @@ A personal finance tracker built with **Next.js** and **Supabase**, featuring an
    Create a `.env.local` file in the root directory:
    ```env
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your_supabase_publishable_default_key
-   NEXT_PUBLIC_HF_SPACE_URL=your_huggingface_space_url
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+   NEXT_PUBLIC_HF_SPACE_NAME=your_huggingface_space_name
    ```
 
 4. **Run the development server**
