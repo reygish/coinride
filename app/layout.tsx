@@ -10,7 +10,7 @@ const defaultUrl = process.env.VERCEL_URL
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "CoinRide",
-  description: "Money Management with AI Integrated Categorization",
+  description: "CoinRide - Money Management App with AI Integrated Topic Categorization",
 };
 
 const geistSans = Geist({
