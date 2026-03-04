@@ -25,21 +25,21 @@ export default function Page() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="e.g. Lunch at Somewhere"
-          className="border border-gray-300 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="border border-input text-foreground rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <button
           type="submit"
           disabled={loading || !description}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+          className="bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition disabled:opacity-50"
         >
           {loading ? "Classifying..." : "Classify"}
         </button>
       </form>
 
       {result && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-sm text-gray-500 mb-1">Result:</p>
-          <p className="font-semibold text-gray-800">{result}</p>
+        <div className="mt-6 p-4 bg-muted rounded-lg border border-border">
+          <p className="text-sm text-muted-foreground mb-1">Result:</p>
+          <p className="font-semibold text-foreground">{result}</p>
         </div>
       )}
     </div>
