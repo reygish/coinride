@@ -38,7 +38,7 @@ export default function Page() {
 
       {result && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-sm text-gray-500 mb-1">Result: test</p>
+          <p className="text-sm text-gray-500 mb-1">Result:</p>
           <p className="font-semibold text-gray-800">{result}</p>
         </div>
       )}
