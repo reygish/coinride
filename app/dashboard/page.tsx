@@ -25,7 +25,7 @@ export default function Page() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="e.g. Lunch at Somewhere"
-          className="border border-input text-foreground rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
+          className="border border-input text-background rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <button
           type="submit"
