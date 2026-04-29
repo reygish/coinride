@@ -1,8 +1,8 @@
 "use client";
 
-import react, { useState } from "react";
-import UserProfileCard from "@/lib/profile/userProfileCard";
-import EditProfileForm from "@/lib/profile/editProfileForm";
+import { useState } from "react";
+import UserProfileCard from "@/lib/profile/UserProfileCard";
+import EditProfileForm from "@/lib/profile/EditProfileForm";
 
 export default function Page() {
   const [user, setUser] = useState(null);

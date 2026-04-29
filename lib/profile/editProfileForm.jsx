@@ -1,13 +1,20 @@
-import react, { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { Save, X } from "lucide-react";
 
 const EditProfileForm = ({ user, onSave, onCancel }) => {
-  const [form, setForm] = useState(
-    user || { name: "", email: "", avatar: "", bio: "" }
-  );
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    avatar: "",
+    bio: "",
+  });
 
   useEffect(() => {
-    setForm(user || { name: "", email: "", avatar: "", bio: "" });
+    if (user) {
+      setForm(user);
+    }
   }, [user]);
 
   const handleChange = (e) => {
@@ -19,13 +26,13 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
 
   return (
     <div className="w-[320px] p-6 rounded-2xl shadow-lg bg-white space-y-3">
-      <h2 className="text-lg font-semibold">edit profile</h2>
+      <h2 className="text-lg font-semibold">Edit Profile</h2>
 
       <input
         name="name"
         value={form.name}
         onChange={handleChange}
-        placeholder="name"
+        placeholder="Name"
         className="w-full border rounded-lg px-3 py-2 text-sm"
       />
 
@@ -33,7 +40,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
         name="email"
         value={form.email}
         onChange={handleChange}
-        placeholder="email"
+        placeholder="Email"
         className="w-full border rounded-lg px-3 py-2 text-sm"
       />
 
@@ -41,7 +48,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
         name="avatar"
         value={form.avatar}
         onChange={handleChange}
-        placeholder="avatar url"
+        placeholder="Avatar URL"
         className="w-full border rounded-lg px-3 py-2 text-sm"
       />
 
@@ -49,7 +56,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
         name="bio"
         value={form.bio}
         onChange={handleChange}
-        placeholder="bio"
+        placeholder="Bio"
         className="w-full border rounded-lg px-3 py-2 text-sm"
       />
 
@@ -59,7 +66,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
         >
           <Save size={16} />
-          save
+          Save
         </button>
 
         <button
@@ -67,7 +74,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
           className="flex items-center gap-2 px-4 py-2 rounded-lg border hover:bg-gray-100"
         >
           <X size={16} />
-          cancel
+          Cancel
         </button>
       </div>
     </div>
