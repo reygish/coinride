@@ -1,42 +1,30 @@
 "use client";
 
 import react, { useState } from "react";
-import userProfileCard from "@/lib/profile/userProfileCard";
-import editProfileForm from "@/lib/profile/editProfileForm";
+import UserProfileCard from "@/lib/profile/userProfileCard";
+import EditProfileForm from "@/lib/profile/editProfileForm";
 
-export default function page() {
-  const [user, setUser] = useState(null); // awalnya kosong
-  const [isEditing, setIsEditing] = useState(true); // langsung form
+export default function Page() {
+  const [user, setUser] = useState(null);
+  const [isEditing, setIsEditing] = useState(true);
 
   return (
-    <div style={styles.container}>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
       {isEditing ? (
-        <editProfileForm
-          user={user || { name: "", email: "", avatar: "", bio: "" }}
+        <EditProfileForm
+          user={user}
           onSave={(updatedUser) => {
             setUser(updatedUser);
             setIsEditing(false);
           }}
           onCancel={() => setIsEditing(false)}
         />
-      ) : user ? (
-        <userProfileCard
+      ) : (
+        <UserProfileCard
           user={user}
           onEdit={() => setIsEditing(true)}
         />
-      ) : (
-        <p>no profile yet</p>
       )}
     </div>
   );
 }
-
-const styles = {
-  container: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    backgroundColor: "#f5f5f5",
-  },
-};
