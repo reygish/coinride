@@ -9,7 +9,7 @@ export default function Page() {
   const supabase = createClient();
 
   const [user, setUser] = useState(null);
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
   const getCurrentUser = async () => {
     const { data } = await supabase.auth.getUser();
@@ -18,7 +18,12 @@ export default function Page() {
 
   const loadProfile = async () => {
     const user = await getCurrentUser();
-    if (!user) return;
+
+    // protect route
+    if (!user) {
+      window.location.href = "/auth/login";
+      return;
+    }
 
     const { data } = await supabase
       .from("profiles")
@@ -29,6 +34,8 @@ export default function Page() {
     if (data) {
       setUser(data);
       setIsEditing(false);
+    } else {
+      setIsEditing(true);
     }
   };
 
@@ -40,12 +47,18 @@ export default function Page() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       {isEditing ? (
         <EditProfileForm
-          user={user}
+          user={user || {
+            name: "",
+            email: "",
+            avatar: "",
+            bio: ""
+          }}
           onSave={async (updatedUser) => {
             const currentUser = await getCurrentUser();
 
             await supabase.from("profiles").upsert({
               id: currentUser.id,
+              email: currentUser.email,
               ...updatedUser,
             });
 

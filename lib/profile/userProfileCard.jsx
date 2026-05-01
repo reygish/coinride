@@ -1,26 +1,34 @@
-import { User, Mail, Pencil } from "lucide-react";
+import { User, Mail, Pencil, LogOut } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
-const UserProfileCard = ({ user, onEdit }) => {
+const UserProfileCard = ({ user = {}, onEdit }) => {
+  const supabase = createClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/auth/login";
+  };
+
   return (
     <div className="w-[320px] p-6 rounded-2xl shadow-lg bg-white text-center space-y-3">
       <img
-        src={user.avatar || "https://i.pravatar.cc/150"}
+        src={user?.avatar?.trim() ? user.avatar : "https://i.pravatar.cc/150"}
         alt="avatar"
         className="w-24 h-24 rounded-full mx-auto object-cover"
       />
 
       <h2 className="text-xl font-semibold flex items-center justify-center gap-2">
         <User size={18} />
-        {user.name || "no name"}
+        {user.name || "Your Name"}
       </h2>
 
       <p className="text-gray-500 flex items-center justify-center gap-2 text-sm">
         <Mail size={16} />
-        {user.email || "no email"}
+        {user.email || "your@email.com"}
       </p>
 
       <p className="text-sm text-gray-700">
-        {user.bio || "no bio"}
+        {user.bio || "No bio added yet"}
       </p>
 
       <button
@@ -29,6 +37,14 @@ const UserProfileCard = ({ user, onEdit }) => {
       >
         <Pencil size={16} />
         Edit Profile
+      </button>
+
+      <button
+        onClick={handleLogout}
+        className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+      >
+        <LogOut size={16} />
+        Logout
       </button>
     </div>
   );
