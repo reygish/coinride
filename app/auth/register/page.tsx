@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterPage() {
+  const supabase = createClient();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,8 +21,34 @@ export default function RegisterPage() {
     }
     
     setIsLoading(true);
-    console.log("Registration attempt:", { name, email, password });
-    // call api
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name },
+      },
+    });
+
+    if (error) {
+      alert(error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    // ambil user
+    const { data } = await supabase.auth.getUser();
+
+    // simpan ke profiles
+    if (data.user) {
+      await supabase.from("profiles").insert({
+        id: data.user.id,
+        email: data.user.email,
+        name,
+      });
+    }
+
+    alert("Register success, please login");
+    window.location.href = "/auth/login";
     
     setIsLoading(false);
   };
