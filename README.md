@@ -15,6 +15,7 @@ A personal finance tracker built with **Next.js** and **Supabase**, featuring an
 - 📊 **Dashboard & Analytics** — Visual spending breakdowns by category
 - 🔐 **Authentication** — Secure sign-up and login via Supabase Auth
 - 📱 **Responsive Design** — Works on both desktop and mobile
+- ⏰ **Smart Reminders** — Set up custom hourly or daily notifications at your preferred time to ensure you never forget to log your finances.
 
 ---
 
