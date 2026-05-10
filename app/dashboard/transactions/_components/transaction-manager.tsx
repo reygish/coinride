@@ -7,7 +7,7 @@ import TransactionForm from "./transaction-form";
 import { Transaction, TransactionFilter, TransactionPayload } from "./types";
 import TransactionList from "./transaction-list";
 
-const TRANSACTIONS_ENDPOINT = "/transactions";
+const TRANSACTIONS_ENDPOINT = "/api/transactions";
 const PLACEHOLDER_CATEGORIES = [
   "Food & Dining",
   "Housing",
@@ -28,9 +28,7 @@ export default function TransactionManager({
 }: TransactionManagerProps) {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [filter, setFilter] = useState<TransactionFilter>("all");
-  const [categoryOptions, setCategoryOptions] = useState<string[]>(
-    PLACEHOLDER_CATEGORIES
-  );
+  const [categoryOptions, setCategoryOptions] = useState<string[]>(PLACEHOLDER_CATEGORIES);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [error, setError] = useState<string | null>(null);

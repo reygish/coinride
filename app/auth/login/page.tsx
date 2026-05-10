@@ -1,41 +1,68 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const supabase = createClient();
+  
+  const { supabase, supabaseInitError } = useMemo<{
+    supabase: ReturnType<typeof createClient> | null;
+    supabaseInitError: string | null;
+  }>(() => {
+    try {
+      return { supabase: createClient(), supabaseInitError: null };
+    } catch (err: unknown) {
+      console.error("Failed to create Supabase client", err);
+      const message = err instanceof Error ? err.message : "Missing Supabase configuration.";
+      return { supabase: null, supabaseInitError: message };
+    }
+  }, []);
+
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    // TODO: Implement login logic
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
 
-    if (error) {
-      alert(error.message);
-      setIsLoading(false);
-    return;
+    if (!supabase) {
+      alert(supabaseInitError);
+      return;
     }
 
-window.location.href = "/profile";
-    
-    setIsLoading(false);
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      router.push("/dashboard")
+    } catch (err: unknown) {
+      console.error("Supabase sign-in request failed", err);
+      const message = err instanceof Error && err.message ? err.message : "Unable to reach the authentication service.";
+      alert(message);
+    } finally {
+      setIsLoading(false);
+    }
+
   };
 
-  const handleGoogleLogin = async() => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
     console.log("Google login");
     // call api
-  }
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-secondary to-background flex items-center justify-center px-6">
@@ -45,14 +72,19 @@ window.location.href = "/profile";
           <Link href="/" className="text-4xl font-bold text-primary">
             CoinRide
           </Link>
-          <p className="text-muted-foreground mt-2">Welcome back! Sign in to continue.</p>
+          <p className="text-muted-foreground mt-2">
+            Welcome back! Sign in to continue.
+          </p>
         </div>
 
         {/* Login Form */}
         <div className="bg-card rounded-2xl shadow-lg p-8 border border-border">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -67,7 +99,10 @@ window.location.href = "/profile";
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Password
               </label>
               <input
@@ -89,7 +124,10 @@ window.location.href = "/profile";
                 />
                 <span className="ml-2 text-muted-foreground">Remember me</span>
               </label>
-              <Link href="/auth/forgot-password" className="text-primary hover:text-primary/80">
+              <Link
+                href="/auth/forgot-password"
+                className="text-primary hover:text-primary/80"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -109,7 +147,9 @@ window.location.href = "/profile";
                 <div className="w-full border-t border-border"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-card text-muted-foreground">Or continue with</span>
+                <span className="px-4 bg-card text-muted-foreground">
+                  Or continue with
+                </span>
               </div>
             </div>
 
@@ -146,10 +186,13 @@ window.location.href = "/profile";
         {/* Sign Up Link */}
         <p className="text-center mt-8 text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/auth/register" className="text-primary font-medium hover:text-primary/80">
+          <Link
+            href="/auth/register"
+            className="text-primary font-medium hover:text-primary/80"
+          >
             Sign up
           </Link>
-        </p> 
+        </p>
       </div>
     </main>
   );

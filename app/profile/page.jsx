@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import UserProfileCard from "@/lib/profile/UserProfileCard";
-import EditProfileForm from "@/lib/profile/EditProfileForm";
+import EditProfileForm from "@/lib/profile/editProfileForm";
+import UserProfileCard from "@/lib/profile/userProfileCard";
 
 export default function Page() {
+  const router = useRouter();
   const supabase = createClient();
 
   const [user, setUser] = useState(null);
@@ -17,13 +19,13 @@ export default function Page() {
   };
 
   const loadProfile = async () => {
-    const user = await getCurrentUser();
+    // const user = await getCurrentUser();
 
     // protect route
-    if (!user) {
-      window.location.href = "/auth/login";
-      return;
-    }
+    // if (!user) {
+    //   router.replace("/auth/login");
+    //   return;
+    // }
 
     const { data } = await supabase
       .from("profiles")
@@ -40,7 +42,7 @@ export default function Page() {
   };
 
   useEffect(() => {
-    loadProfile();
+    // loadProfile();
   }, []);
 
   return (

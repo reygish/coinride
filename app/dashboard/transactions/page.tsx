@@ -1,65 +1,19 @@
 import TransactionManager from "./_components/transaction-manager";
 import { Transaction } from "./_components/types";
 
-const DUMMY_TRANSACTIONS: Transaction[] = [
-  {
-    id: "txn-101",
-    date: "2026-03-12",
-    account: "Primary Checking",
-    amount: 3800,
-    description: "Product design retainer",
-    category: "Consulting Income",
-    type: "income",
-  },
-  {
-    id: "txn-102",
-    date: "2026-03-11",
-    account: "Corporate Card",
-    amount: 275,
-    description: "Leadership offsite catering",
-    category: "Team Meals",
-    type: "expense",
-  },
-  {
-    id: "txn-103",
-    date: "2026-03-09",
-    account: "Savings",
-    amount: 950,
-    description: "Monthly dividend payout",
-    category: "Passive Income",
-    type: "income",
-  },
-  {
-    id: "txn-104",
-    date: "2026-03-07",
-    account: "Primary Checking",
-    amount: 128,
-    description: "Team transit passes",
-    category: "Transportation",
-    type: "expense",
-  },
-  {
-    id: "txn-105",
-    date: "2026-03-04",
-    account: "Corporate Card",
-    amount: 640,
-    description: "Q2 marketing toolkit",
-    category: "Growth Budget",
-    type: "expense",
-  },
-  {
-    id: "txn-106",
-    date: "2026-03-01",
-    account: "Savings",
-    amount: 1200,
-    description: "Recurring SaaS revenue",
-    category: "Subscription Income",
-    type: "income",
-  },
-];
+import { listTransactions } from "@/lib/transactions/queries";
 
-export default function TransactionsPage() {
-  const initialTransactions = DUMMY_TRANSACTIONS;
+export default async function TransactionsPage() {
+  const rawTransactions = await listTransactions();
+  const initialTransactions: Transaction[] = rawTransactions.map((tx) => ({
+    id: tx.id,
+    date: tx.date,
+    account: tx.account,
+    amount: tx.amount,
+    description: tx.description,
+    category: tx.category,
+    type: tx.type,
+  }));
 
   return (
     <div className="space-y-6 p-6">

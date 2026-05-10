@@ -1,12 +1,14 @@
 import { User, Mail, Pencil, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const UserProfileCard = ({ user = {}, onEdit }) => {
+  const router = useRouter();
   const supabase = createClient();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = "/auth/login";
+    router.replace("/auth/login");
   };
 
   return (
@@ -19,16 +21,16 @@ const UserProfileCard = ({ user = {}, onEdit }) => {
 
       <h2 className="text-xl font-semibold flex items-center justify-center gap-2">
         <User size={18} />
-        {user.name || "Your Name"}
+        {user?.name || "Your Name"}
       </h2>
 
       <p className="text-gray-500 flex items-center justify-center gap-2 text-sm">
         <Mail size={16} />
-        {user.email || "your@email.com"}
+        {user?.email || "your@email.com"}
       </p>
 
       <p className="text-sm text-gray-700">
-        {user.bio || "No bio added yet"}
+        {user?.bio || "No bio added yet"}
       </p>
 
       <button
