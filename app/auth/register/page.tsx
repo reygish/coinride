@@ -2,24 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
+import { registerWithPassword } from "@/lib/actions/auth";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { supabase, supabaseInitError } = useMemo<{
-    supabase: ReturnType<typeof createClient> | null;
-    supabaseInitError: string | null;
-  }>(() => {
-    try {
-      return { supabase: createClient(), supabaseInitError: null };
-    } catch (err: unknown) {
-      console.error("Failed to create Supabase client", err);
-      const message =
-        err instanceof Error ? err.message : "Missing Supabase configuration.";
-      return { supabase: null, supabaseInitError: message };
-    }
-  }, []);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,48 +21,21 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!supabase) {
-      alert(supabaseInitError);
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name },
-        },
-      });
+      const result = await registerWithPassword(name, email, password);
 
-      if (error) {
-        alert(error.message);
+      if (!result.ok) {
+        alert(result.error);
         return;
-      }
-
-      // ambil user
-      const { data } = await supabase.auth.getUser();
-
-      // simpan ke profiles
-      if (data.user) {
-        await supabase.from("profiles").insert({
-          id: data.user.id,
-          email: data.user.email,
-          name,
-        });
       }
 
       alert("Register success, please login");
       router.push("/auth/login");
     } catch (err: unknown) {
-      console.error("Supabase sign-up request failed", err);
-      const message =
-        err instanceof Error && err.message
-          ? err.message
-          : "Unable to reach the authentication service.";
-      alert(message);
+      console.error("Register request failed", err);
+      alert("Unable to reach the authentication service.");
     } finally {
       setIsLoading(false);
     }

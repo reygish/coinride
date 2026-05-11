@@ -3,20 +3,13 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { classifyTransaction } from "@/lib/actions/classifyTransaction";
 import FilterTabs from "./filter-tabs";
-import TransactionForm from "./transaction-form";
 import { Transaction, TransactionFilter, TransactionPayload } from "./types";
 import TransactionList from "./transaction-list";
+import TransactionForm from "./transaction-form";
+import { Category } from "@/lib/category/types";
+import { getCategories } from "@/lib/category/queries";
+import { createTransaction } from "@/lib/transactions/queries";
 
-const TRANSACTIONS_ENDPOINT = "/api/transactions";
-const PLACEHOLDER_CATEGORIES = [
-  "Food & Dining",
-  "Housing",
-  "Transportation",
-  "Healthcare",
-  "Entertainment",
-  "Investments",
-  "Savings",
-];
 const SEARCH_DEBOUNCE = 350;
 
 type TransactionManagerProps = {
@@ -26,9 +19,10 @@ type TransactionManagerProps = {
 export default function TransactionManager({
   initialTransactions,
 }: TransactionManagerProps) {
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const [transactions, setTransactions] =
+    useState<Transaction[]>(initialTransactions);
   const [filter, setFilter] = useState<TransactionFilter>("all");
-  const [categoryOptions, setCategoryOptions] = useState<string[]>(PLACEHOLDER_CATEGORIES);
+  const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -36,62 +30,7 @@ export default function TransactionManager({
   const [isRefetching, setIsRefetching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const refreshTransactions = useCallback(
-    async (isSoftRefresh = false) => {
-      if (isSoftRefresh) {
-        setIsRefetching(true);
-      } else {
-        setIsLoading(true);
-      }
-      setError(null);
-      try {
-        const response = await fetch(TRANSACTIONS_ENDPOINT, { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error("Failed to fetch transactions");
-        }
-        const payload = await response.json();
-        const nextTransactions: Transaction[] = Array.isArray(payload) ? payload : [];
-        setTransactions(nextTransactions);
-        setCategoryOptions((prev) => {
-          const merged = new Set([...PLACEHOLDER_CATEGORIES, ...prev]);
-          nextTransactions.forEach((tx) => {
-            if (tx.category) {
-              merged.add(tx.category);
-            }
-          });
-          return Array.from(merged);
-        });
-      } catch (fetchError) {
-        setError("Unable to load transactions right now. Please try again.");
-      } finally {
-        if (isSoftRefresh) {
-          setIsRefetching(false);
-        } else {
-          setIsLoading(false);
-        }
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    setTransactions(initialTransactions);
-    if (initialTransactions.length > 0) {
-      setIsLoading(false);
-      setCategoryOptions((prev) => {
-        const merged = new Set([...PLACEHOLDER_CATEGORIES, ...prev]);
-        initialTransactions.forEach((tx) => merged.add(tx.category));
-        return Array.from(merged);
-      });
-    }
-  }, [initialTransactions]);
-
-  useEffect(() => {
-    if (initialTransactions.length === 0) {
-      refreshTransactions();
-    }
-  }, [initialTransactions.length, refreshTransactions]);
-
+  // SEARCH
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setDebouncedSearch(searchTerm.trim().toLowerCase());
@@ -100,15 +39,11 @@ export default function TransactionManager({
     return () => window.clearTimeout(timer);
   }, [searchTerm]);
 
-  const counts = useMemo(
-    () => ({
-      all: transactions.length,
-      income: transactions.filter((tx) => tx.type === "income").length,
-      expense: transactions.filter((tx) => tx.type === "expense").length,
-    }),
-    [transactions]
-  );
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
 
+  // UPDATE FILTERED TRANSACTIONS
   const filteredTransactions = useMemo(() => {
     return transactions.filter((transaction) => {
       if (filter !== "all" && transaction.type !== filter) {
@@ -119,71 +54,84 @@ export default function TransactionManager({
         return true;
       }
 
-      const haystack = `${transaction.description} ${transaction.category} ${transaction.account}`.toLowerCase();
+      const haystack =
+        `${transaction.description ?? ""} ${transaction.category_id} ${transaction.payment_method ?? ""}`.toLowerCase();
       return haystack.includes(debouncedSearch);
     });
   }, [transactions, filter, debouncedSearch]);
 
-  const handleCreateTransaction = useCallback(
-    async (payload: TransactionPayload) => {
-      setIsSubmitting(true);
-      setError(null);
-      const optimisticId = `temp-${Date.now()}`;
-      const optimisticTransaction: Transaction = { id: optimisticId, ...payload };
-
-      setTransactions((prev) => [optimisticTransaction, ...prev]);
-
-      try {
-        const response = await fetch(TRANSACTIONS_ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to create transaction");
-        }
-
-        const created: Transaction = await response.json();
-        setTransactions((prev) =>
-          prev.map((transaction) => (transaction.id === optimisticId ? created : transaction))
-        );
-      } catch (createError) {
-        setTransactions((prev) => prev.filter((transaction) => transaction.id !== optimisticId));
-        setError("We could not save the transaction. Please try again.");
-        throw createError;
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    []
+  // COUNTING INCOME AND EXPENSE
+  const counts = useMemo(
+    () => ({
+      all: transactions.length,
+      income: transactions.filter((tx) => tx.type === "income").length,
+      expense: transactions.filter((tx) => tx.type === "expense").length,
+    }),
+    [transactions],
   );
 
-  const handleAutoCategory = useCallback(async (description: string) => {
-    const rawCategory = await classifyTransaction(description);
-    const generatedCategory = rawCategory?.trim() || "Uncategorized";
-    setCategoryOptions((prev) => {
-      if (prev.includes(generatedCategory)) {
-        return prev;
-      }
-      return [...prev, generatedCategory];
-    });
-    return generatedCategory;
+  // FETCH CATEGORIES
+  // TODO: move to general action
+  async function fetchCategories() {
+    try {
+      const data = await getCategories();
+
+      setCategoryOptions(data);
+    } catch (error) {
+      console.error("Failed to fetch categories", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchCategories();
   }, []);
 
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+  // CREATE TRANSACTION
+  const handleCreateTransaction = async (payload: TransactionPayload) => {
+    setIsSubmitting(true);
+    setError(null);
+
+    const Transaction: Transaction = {
+      id: "",
+      user_id: "",
+      ...payload,
+    };
+
+    
+    try {
+      const result = await createTransaction(payload);
+      setTransactions((prev) => [Transaction, ...prev]);
+    } catch (createError) {
+      setError("We could not save the transaction. Please try again.");
+      console.error(createError);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAutoCategory = async (description: string) => {
+    // TODO: Implement auto categorization
+    return "generated";
   };
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
       <div className="space-y-4">
-        <FilterTabs activeFilter={filter} counts={counts} onFilterChange={setFilter} />
+        <FilterTabs
+          activeFilter={filter}
+          counts={counts}
+          onFilterChange={setFilter}
+        />
         <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="space-y-1">
-            <h2 className="text-lg font-medium text-foreground">Add Transaction</h2>
+            <h2 className="text-lg font-medium text-foreground">
+              Add Transaction
+            </h2>
             <p className="text-sm text-muted-foreground">
-              The filter determines the transaction type. Choose manually when "All" is active.
+              The filter determines the transaction type. Choose manually when
+              "All" is active.
             </p>
           </div>
           <div className="mt-4">
@@ -219,21 +167,21 @@ export default function TransactionManager({
               className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
-          <button
+          {/* <button
             type="button"
             onClick={() => refreshTransactions(true)}
             disabled={isRefetching}
             className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
           >
             {isRefetching ? "Refreshing..." : "Refresh"}
-          </button>
+          </button> */}
         </div>
 
         <TransactionList
           transactions={filteredTransactions}
           loading={isLoading}
           error={error}
-          onRetry={() => refreshTransactions()}
+          // onRetry={() => refreshTransactions()}
         />
       </div>
     </div>

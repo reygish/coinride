@@ -1,121 +1,119 @@
-import { createClient } from "@/lib/supabase/server";
 import { hasEnvVars } from "@/lib/utils";
+import { Transaction } from "./types";
+import { getAuthedServerClient } from "../actions/auth";
+import { createClient } from "../supabase/client";
 
 export type TransactionType = "income" | "expense";
-
-export type Transaction = {
-	id: string;
-	user_id: string;
-	date: string;
-	account: string;
-	amount: number;
-	description: string;
-	category: string;
-	type: TransactionType;
-};
 
 export type TransactionPayload = Omit<Transaction, "id" | "user_id">;
 
 const TABLE = "transactions";
 
-async function getAuthedServerClient() {
-	if (!hasEnvVars) {
-		return { supabase: null, user: null, error: new Error("Supabase is not configured") };
-	}
-
-	const supabase = await createClient();
-	const {
-		data: { user },
-		error,
-	} = await supabase.auth.getUser();
-
-	if (error) {
-		return { supabase: null, user: null, error };
-	}
-
-	if (!user) {
-		return { supabase: null, user: null, error: new Error("Not authenticated") };
-	}
-
-	return { supabase, user, error: null };
-}
-
+// GET USER TRANSACTIONS
 export async function listTransactions(): Promise<Transaction[]> {
-	const { supabase, user, error } = await getAuthedServerClient();
-	if (error || !supabase || !user) {
-		return [];
-	}
+  const { user, error } = await getAuthedServerClient();
+  if (error || !user) {
+    return [];
+  }
 
-	const { data, error: queryError } = await supabase
-		.from(TABLE)
-		.select("id,user_id,date,account,amount,description,category,type")
-		.eq("user_id", user.id)
-		.order("date", { ascending: false })
-		.order("id", { ascending: false });
+  const supabase = createClient();
 
-	if (queryError) {
-		return [];
-	}
+  const { data, error: queryError } = await supabase
+    .from(TABLE)
+    .select(
+      "id,user_id,category_id,budget_id,description,amount,type,transaction_date,created_at,payment_method",
+    )
+    .eq("user_id", user.id)
+    .order("transaction_date", { ascending: false })
+    .order("id", { ascending: false });
 
-	return Array.isArray(data) ? (data as Transaction[]) : [];
+  if (queryError) {
+    return [];
+  }
+
+  return Array.isArray(data) ? (data as Transaction[]) : [];
+}
+// CREATE TRANSACTION
+export async function createTransaction(
+  payload: TransactionPayload,
+): Promise<Transaction> {
+  const { user, error } = await getAuthedServerClient();
+  if (error || !user) {
+    throw error;
+  }
+
+  const supabase = createClient();
+
+  const { data, error: insertError } = await supabase
+    .from(TABLE)
+    .insert({
+      user_id: user.id,
+      category_id: payload.category_id,
+      budget_id: payload.budget_id,
+      description: payload.description,
+      amount: payload.amount,
+      type: payload.type,
+      transaction_date: payload.transaction_date,
+      payment_method: payload.payment_method,
+    })
+    .select(
+      "id,user_id,category_id,budget_id,description,amount,type,transaction_date,created_at,payment_method",
+    )
+    .single();
+
+  if (insertError) {
+    console.error(insertError);
+    throw insertError;
+  }
+
+  return data as Transaction;
 }
 
-export async function createTransaction(payload: TransactionPayload): Promise<Transaction> {
-	const { supabase, user, error } = await getAuthedServerClient();
-	if (error || !supabase || !user) {
-		throw error ?? new Error("Not authenticated");
-	}
-
-	const { data, error: insertError } = await supabase
-		.from(TABLE)
-		.insert({ ...payload, user_id: user.id })
-		.select("id,user_id,date,account,amount,description,category,type")
-		.single();
-
-	if (insertError) {
-		throw insertError;
-	}
-
-	return data as Transaction;
-}
+// ===================================================================
 
 export async function updateTransaction(
-	id: string,
-	patch: Partial<TransactionPayload>
+  id: string,
+  patch: Partial<TransactionPayload>,
 ): Promise<Transaction> {
-	const { supabase, user, error } = await getAuthedServerClient();
-	if (error || !supabase || !user) {
-		throw error ?? new Error("Not authenticated");
-	}
+  const { user, error } = await getAuthedServerClient();
+  if (error || !user) {
+    throw error;
+  }
 
-	const { data, error: updateError } = await supabase
-		.from(TABLE)
-		.update(patch)
-		.eq("id", id)
-		.eq("user_id", user.id)
-		.select("id,user_id,date,account,amount,description,category,type")
-		.single();
+  const supabase = createClient();
 
-	if (updateError) {
-		throw updateError;
-	}
+  const { data, error: updateError } = await supabase
+    .from(TABLE)
+    .update(patch)
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .select(
+      "id,user_id,category_id,budget_id,description,amount,type,transaction_date,created_at,payment_method",
+    )
+    .single();
 
-	return data as Transaction;
+  if (updateError) {
+    throw updateError;
+  }
+
+  return data as Transaction;
 }
 
 export async function deleteTransaction(id: string): Promise<void> {
-	const { supabase, user, error } = await getAuthedServerClient();
-	if (error || !supabase || !user) {
-		throw error ?? new Error("Not authenticated");
-	}
+  const { user, error } = await getAuthedServerClient();
+  if (error || !user) {
+    throw error;
+  }
 
-	const { error: deleteError } = await supabase
-		.from(TABLE)
-		.delete()
-		.eq("id", id)
-		.eq("user_id", user.id);
+  const supabase = createClient();
 
-	if (deleteError) {
-		throw deleteError;
-	}
+  const { error: deleteError } = await supabase
+    .from(TABLE)
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (deleteError) {
+    throw deleteError;
+  }
 }

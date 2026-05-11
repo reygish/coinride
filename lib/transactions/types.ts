@@ -3,18 +3,17 @@ export interface Transaction {
   user_id: string;
   category_id: string;
 
-  title: string;
-  description?: string;
+  budget_id?: string | null;
+  description?: string | null;
 
   amount: number;
 
   type: "income" | "expense";
 
   transaction_date: string;
+  created_at?: string | null;
 
-  payment_method?: string;
+  payment_method?: string | null;
 }
 
-export type TransactionType =
-  | "income"
-  | "expense";
+export type TransactionType = "income" | "expense";

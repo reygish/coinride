@@ -7,14 +7,14 @@ type TransactionListProps = {
   transactions: Transaction[];
   loading: boolean;
   error: string | null;
-  onRetry: () => void;
+  // onRetry: () => void;
 };
 
 export default function TransactionList({
   transactions,
   loading,
   error,
-  onRetry,
+  // onRetry,
 }: TransactionListProps) {
   if (loading) {
     return (
@@ -33,13 +33,13 @@ export default function TransactionList({
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-destructive/30 bg-destructive/5 p-6 text-center">
         <p className="text-sm text-destructive">{error}</p>
-        <button
+        {/* <button
           type="button"
           onClick={onRetry}
           className="mt-3 rounded-xl bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground"
         >
           Try again
-        </button>
+        </button> */}
       </div>
     );
   }
@@ -51,13 +51,13 @@ export default function TransactionList({
         <p className="mt-1 max-w-sm text-sm text-muted-foreground">
           Add your first income or expense entry using the form on the left, or refresh to sync the latest records.
         </p>
-        <button
+        {/* <button
           type="button"
           onClick={onRetry}
           className="mt-4 rounded-xl border border-input px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
         >
           Refresh list
-        </button>
+        </button> */}
       </div>
     );
   }

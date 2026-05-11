@@ -1,15 +1,12 @@
-export type TransactionType = "income" | "expense";
+import type { Transaction, TransactionType } from "@/lib/transactions/types";
+
+export type { Transaction, TransactionType } from "@/lib/transactions/types";
 
 export type TransactionFilter = "all" | TransactionType;
 
-export interface Transaction {
-  id: string;
-  date: string;
-  account: string;
-  amount: number;
-  description: string;
-  category: string;
-  type: TransactionType;
-}
-
-export type TransactionPayload = Omit<Transaction, "id">;
+// Payload used by the client when creating a transaction.
+// user_id/id/created_at are server-generated.
+export type TransactionPayload = Omit<
+  Transaction,
+  "id" | "user_id" | "created_at"
+>;

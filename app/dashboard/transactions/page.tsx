@@ -5,15 +5,7 @@ import { listTransactions } from "@/lib/transactions/queries";
 
 export default async function TransactionsPage() {
   const rawTransactions = await listTransactions();
-  const initialTransactions: Transaction[] = rawTransactions.map((tx) => ({
-    id: tx.id,
-    date: tx.date,
-    account: tx.account,
-    amount: tx.amount,
-    description: tx.description,
-    category: tx.category,
-    type: tx.type,
-  }));
+  const initialTransactions: Transaction[] = rawTransactions;
 
   return (
     <div className="space-y-6 p-6">

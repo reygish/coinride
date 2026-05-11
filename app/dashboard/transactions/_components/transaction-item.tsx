@@ -27,19 +27,20 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
   const amountClass =
     transaction.type === "income" ? "text-primary" : "text-destructive";
 
+  const headline = transaction.description || "";
+
   return (
     <div className="flex items-start justify-between rounded-2xl border border-border bg-background px-4 py-3">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <p className="text-base font-medium text-foreground">
-            {transaction.description}
-          </p>
+          <p className="text-base font-medium text-foreground">{headline}</p>
           <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-            {transaction.category}
+            {transaction.category_id}
           </span>
         </div>
         <p className="text-sm text-muted-foreground">
-          {transaction.account} - {formatDate(transaction.date)}
+          {(transaction.payment_method ?? "").trim() || "-"} -{" "}
+          {formatDate(transaction.transaction_date)}
         </p>
       </div>
       <p className={`text-base font-semibold ${amountClass}`}>

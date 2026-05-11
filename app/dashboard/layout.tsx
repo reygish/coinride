@@ -16,7 +16,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* Tweak: Remove `hidden md:block` if you want sidebar on mobile */}
         <Sidebar className="hidden md:block" />
 
-        <main className="min-w-0 flex-1 min-h-0 overflow-y-auto">{children}</main>
+        <main className="min-w-0 flex-1 min-h-0 overflow-y-auto">
+          {children}
+        </main>
       </div>
     </div>
   );

@@ -1,25 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loginWithPassword } from "@/lib/actions/auth";
 
 export default function LoginPage() {
-  
-  const { supabase, supabaseInitError } = useMemo<{
-    supabase: ReturnType<typeof createClient> | null;
-    supabaseInitError: string | null;
-  }>(() => {
-    try {
-      return { supabase: createClient(), supabaseInitError: null };
-    } catch (err: unknown) {
-      console.error("Failed to create Supabase client", err);
-      const message = err instanceof Error ? err.message : "Missing Supabase configuration.";
-      return { supabase: null, supabaseInitError: message };
-    }
-  }, []);
-
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -29,33 +15,23 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
 
-    if (!supabase) {
-      alert(supabaseInitError);
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const result = await loginWithPassword(email, password);
 
-      if (error) {
-        alert(error.message);
+      if (!result.ok) {
+        alert(result.error);
         return;
       }
 
-      router.push("/dashboard")
+      router.push("/dashboard");
     } catch (err: unknown) {
-      console.error("Supabase sign-in request failed", err);
-      const message = err instanceof Error && err.message ? err.message : "Unable to reach the authentication service.";
-      alert(message);
+      console.error("Login request failed", err);
+      alert("Unable to reach the authentication service.");
     } finally {
       setIsLoading(false);
     }
-
   };
 
   const handleGoogleLogin = async () => {
