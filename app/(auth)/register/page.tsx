@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { registerWithPassword } from "@/lib/auth/auth";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,24 +15,37 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
-    
+
     setIsLoading(true);
-    console.log("Registration attempt:", { name, email, password });
-    // call api
-    
-    setIsLoading(false);
+
+    try {
+      const result = await registerWithPassword(name, email, password);
+
+      if (!result.ok) {
+        alert(result.error);
+        return;
+      }
+
+      alert("Register success, please login");
+      router.push("/auth/login");
+    } catch (err: unknown) {
+      console.error("Register request failed", err);
+      alert("Unable to reach the authentication service.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleLogin = async() => {
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
     console.log("Google login");
     // call api
-  }
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-secondary to-background flex items-center justify-center px-6 py-12">
@@ -39,14 +55,19 @@ export default function RegisterPage() {
           <Link href="/" className="text-4xl font-bold text-primary">
             CoinRide
           </Link>
-          <p className="text-muted-foreground mt-2">Create your account to get started.</p>
+          <p className="text-muted-foreground mt-2">
+            Create your account to get started.
+          </p>
         </div>
 
         {/* Register Form */}
         <div className="bg-card rounded-2xl shadow-lg p-8 border border-border">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Full Name
               </label>
               <input
@@ -61,7 +82,10 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -76,7 +100,10 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Password
               </label>
               <input
@@ -92,7 +119,10 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-foreground mb-2"
+              >
                 Confirm Password
               </label>
               <input
@@ -122,7 +152,9 @@ export default function RegisterPage() {
                 <div className="w-full border-t border-border"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-card text-muted-foreground">Or sign up with</span>
+                <span className="px-4 bg-card text-muted-foreground">
+                  Or sign up with
+                </span>
               </div>
             </div>
 
@@ -159,7 +191,10 @@ export default function RegisterPage() {
         {/* Sign In Link */}
         <p className="text-center mt-8 text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/auth/login" className="text-primary font-medium hover:text-primary/80">
+          <Link
+            href="/login"
+            className="text-primary font-medium hover:text-primary/80"
+          >
             Sign in
           </Link>
         </p>

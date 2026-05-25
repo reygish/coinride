@@ -1,7 +1,7 @@
 "use server";
 
 import { Client } from "@gradio/client";
-import { PredictionResponse } from "../dto/predictionResponse";
+import { PredictionResponse } from "../../types/dto/predictionResponse";
 
 export async function classifyTransaction(description: string) {
   const client = await Client.connect("reygish/finance-categorization");
