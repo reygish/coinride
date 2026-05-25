@@ -1,6 +1,7 @@
 "use client";
 
-import { Transaction } from "./types";
+import { useCategories } from "@/app/_components/providers/CategoryProvider";
+import { Transaction } from "../_lib/types";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -24,8 +25,13 @@ type TransactionItemProps = {
 };
 
 export default function TransactionItem({ transaction }: TransactionItemProps) {
+  const { categories: categoryOptions, isLoading: isCategoriesLoading } =
+    useCategories();
   const amountClass =
     transaction.type === "income" ? "text-primary" : "text-destructive";
+  const category = categoryOptions.find(
+    (cat) => cat.id === transaction.category_id,
+  );
 
   const headline = transaction.description || "";
 
@@ -34,9 +40,14 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <p className="text-base font-medium text-foreground">{headline}</p>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-            {transaction.category_id}
-          </span>
+          {category && (
+            <span
+              className="rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm"
+              style={{ backgroundColor: category.color || "#6b7280" }}
+            >
+              {category.name}
+            </span>
+          )}
         </div>
         <p className="text-sm text-muted-foreground">
           {(transaction.payment_method ?? "").trim() || "-"} -{" "}

@@ -13,7 +13,7 @@ import {
   Trophy,
   User,
 } from "lucide-react";
-import { cn } from "@/lib/utils/utils";
+import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import ThemeToggle from "./ThemeToggle";
 import { ProgressBar } from "@/components/ui/ProgressBar";
@@ -42,7 +42,7 @@ const NAV: NavSection[] = [
       // Tweak: Update this route once you add the page.
       {
         label: "Analytics",
-        href: "/dashboard/analytics",
+        href: "/analytics",
         icon: BarChart3,
         disabled: true,
       },
@@ -51,17 +51,17 @@ const NAV: NavSection[] = [
   {
     title: "Finance",
     items: [
-      { label: "Transactions", href: "/dashboard/transactions", icon: Receipt },
+      { label: "Transactions", href: "/transactions", icon: Receipt },
       // Tweak: Update these routes once you add the pages.
       {
         label: "Budgets",
-        href: "/dashboard/budgets",
+        href: "/budgets",
         icon: Target,
         disabled: true,
       },
       {
         label: "Saving Goals",
-        href: "/dashboard/saving-goals",
+        href: "/saving-goals",
         icon: PiggyBank,
         disabled: true,
       },
@@ -72,13 +72,13 @@ const NAV: NavSection[] = [
     items: [
       {
         label: "Achievements",
-        href: "/dashboard/achievements",
+        href: "/achievements",
         icon: Trophy,
         disabled: true,
       },
       {
         label: "Leaderboard",
-        href: "/dashboard/leaderboard",
+        href: "/leaderboard",
         icon: Medal,
         disabled: true,
       },
@@ -89,18 +89,17 @@ const NAV: NavSection[] = [
     items: [
       {
         label: "Notifications",
-        href: "/dashboard/notifications",
+        href: "/notifications",
         icon: Bell,
         disabled: true,
       },
       { label: "Profile", href: "/profile", icon: User },
       {
         label: "Settings",
-        href: "/dashboard/settings",
+        href: "/settings",
         icon: Settings,
         disabled: true,
       },
-      // "Theme" is rendered as a toggle button below.
     ],
   },
 ];

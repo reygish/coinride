@@ -1,11 +1,7 @@
-import { hasEnvVars } from "@/lib/utils/utils";
-import { Transaction } from "./types";
-import { getAuthedServerClient } from "../actions/auth";
-import { createClient } from "../supabase/client";
-
-export type TransactionType = "income" | "expense";
-
-export type TransactionPayload = Omit<Transaction, "id" | "user_id">;
+import { hasEnvVars } from "@/lib/utils";
+import { Transaction, TransactionPayload } from "./types";
+import { getAuthedServerClient } from "@/lib/auth/auth";
+import { createClient } from "@/lib/supabase/client";
 
 const TABLE = "transactions";
 

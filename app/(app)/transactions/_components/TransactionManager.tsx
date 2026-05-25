@@ -3,12 +3,14 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { classifyTransaction } from "@/lib/classifier/classifyTransaction";
 import FilterTabs from "./FIlterTabs";
-import { Transaction, TransactionFilter, TransactionPayload } from "./types";
 import TransactionList from "./TransactionList";
 import TransactionForm from "./TransactionForm";
-import { Category } from "@/types/category";
-import { getCategories } from "@/lib/category/queries";
 import { createTransaction } from "../_lib/queries";
+import {
+  Transaction,
+  TransactionFilter,
+  TransactionPayload,
+} from "../_lib/types";
 
 const SEARCH_DEBOUNCE = 350;
 
@@ -22,7 +24,6 @@ export default function TransactionManager({
   const [transactions, setTransactions] =
     useState<Transaction[]>(initialTransactions);
   const [filter, setFilter] = useState<TransactionFilter>("all");
-  const [categoryOptions, setCategoryOptions] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -70,24 +71,6 @@ export default function TransactionManager({
     [transactions],
   );
 
-  // FETCH CATEGORIES
-  // TODO: move to general action
-  async function fetchCategories() {
-    try {
-      const data = await getCategories();
-
-      setCategoryOptions(data);
-    } catch (error) {
-      console.error("Failed to fetch categories", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   // CREATE TRANSACTION
   const handleCreateTransaction = async (payload: TransactionPayload) => {
     setIsSubmitting(true);
@@ -108,11 +91,6 @@ export default function TransactionManager({
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleAutoCategory = async (description: string) => {
-    // TODO: Implement auto categorization
-    return "generated";
   };
 
   return (
@@ -136,10 +114,8 @@ export default function TransactionManager({
           <div className="mt-4">
             <TransactionForm
               defaultFilter={filter}
-              categoryOptions={categoryOptions}
               isSubmitting={isSubmitting}
               onSubmit={handleCreateTransaction}
-              onAutoGenerateCategory={handleAutoCategory}
             />
           </div>
         </div>

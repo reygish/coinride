@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { hasEnvVars } from "@/lib/utils/utils";
+import { hasEnvVars } from "@/lib/utils";
 
 export type AuthActionResult =
   | { ok: true }

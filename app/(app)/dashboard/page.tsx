@@ -12,9 +12,14 @@ export default function Page() {
     e.preventDefault();
     setLoading(true);
     setResult(null);
-    const category = await classifyTransaction(description);
-    setResult(category);
-    setLoading(false);
+    try {
+      const category = await classifyTransaction(description);
+      setResult(category);
+    } catch (e) {
+      alert(e);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

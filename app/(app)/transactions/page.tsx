@@ -1,7 +1,6 @@
 import TransactionManager from "./_components/TransactionManager";
-import { Transaction } from "./_components/types";
-
 import { listTransactions } from "./_lib/queries";
+import { Transaction } from "./_lib/types";
 
 export default async function TransactionsPage() {
   const rawTransactions = await listTransactions();

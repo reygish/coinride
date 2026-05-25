@@ -1,13 +1,15 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
-
+import { Category } from "@/types/category";
+import { classifyTransaction } from "@/lib/classifier/classifyTransaction";
+import { useCategories } from "@/app/_components/providers/CategoryProvider";
 import {
   TransactionFilter,
   TransactionPayload,
   TransactionType,
-} from "./types";
-import { Category } from "@/types/category";
+} from "../_lib/types";
+import CategoryDropdown from "@/components/CategoryDropdown";
 
 const AUTO_CATEGORY_VALUE = "__auto__";
 const ACCOUNT_OPTIONS = ["Primary Checking", "Savings", "Corporate Card"];
@@ -23,21 +25,19 @@ type FormState = {
 
 type TransactionFormProps = {
   defaultFilter: TransactionFilter;
-  categoryOptions: Category[];
   isSubmitting: boolean;
   onSubmit: (payload: TransactionPayload) => Promise<void>;
-  onAutoGenerateCategory: (description: string) => Promise<string>;
 };
 
 type FieldErrors = Partial<Record<keyof FormState, string>>;
 
 export default function TransactionForm({
   defaultFilter,
-  categoryOptions,
   isSubmitting,
   onSubmit,
-  onAutoGenerateCategory,
 }: TransactionFormProps) {
+  const { categories: categoryOptions, isLoading: isCategoriesLoading } =
+    useCategories();
   const [formState, setFormState] = useState<FormState>({
     transaction_date: "",
     payment_method: "",
@@ -84,9 +84,16 @@ export default function TransactionForm({
   const generateCategory = async () => {
     try {
       setIsAutoGenerating(true);
-      const generated = await onAutoGenerateCategory(formState.description);
-      setFormState((prev) => ({ ...prev, category_id: generated }));
-      setFieldErrors((prev) => ({ ...prev, category_id: undefined }));
+      const generated = await classifyTransaction(formState.description);
+      const matchedCategory = categoryOptions.find(
+        (cat) => cat.name.toLowerCase() === generated.toLowerCase()
+      );
+      if (matchedCategory) {
+        setFormState((prev) => ({ ...prev, category_id: matchedCategory.id }));
+        setFieldErrors((prev) => ({ ...prev, category_id: undefined }));
+      } else {
+        setFormError(`AI generated "${generated}", but it doesn't match any system categories.`);
+      }
     } catch {
       setFormError("Unable to auto-generate a category. Please try again.");
     } finally {
@@ -95,7 +102,9 @@ export default function TransactionForm({
   };
 
   const handleChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = event.target;
     const field = name as keyof FormState;
@@ -104,10 +113,8 @@ export default function TransactionForm({
     setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
-  const handleSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = event.target;
-
-    if (name === "category_id" && value === AUTO_CATEGORY_VALUE) {
+  const handleSelectChange = (category_id: string) => {
+    if (category_id === AUTO_CATEGORY_VALUE) {
       if (!formState.description.trim()) {
         setFieldErrors((prev) => ({
           ...prev,
@@ -119,8 +126,8 @@ export default function TransactionForm({
       return;
     }
 
-    const field = name as keyof FormState;
-    setFormState((prev) => ({ ...prev, [field]: value }));
+    const field = "category_id" as keyof FormState;
+    setFormState((prev) => ({ ...prev, [field]: category_id }));
     setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
@@ -226,7 +233,7 @@ export default function TransactionForm({
             id="payment_method"
             name="payment_method"
             value={formState.payment_method}
-            onChange={handleSelectChange}
+            onChange={handleChange}
             className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground"
           >
             <option value="">Select payment method</option>
@@ -319,21 +326,11 @@ export default function TransactionForm({
           >
             Category
           </label>
-          <select
-            id="category_id"
-            name="category_id"
-            value={formState.category_id}
-            onChange={handleSelectChange}
-            className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground"
-          >
-            <option value={AUTO_CATEGORY_VALUE}>Auto Generate Category</option>
-            <option value="">Select category</option>
-            {categoryOptions.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+          <CategoryDropdown
+            autoGenerate={true}
+            category_id={formState.category_id}
+            handleSelectChange={handleSelectChange}
+          />
           {isAutoGenerating && (
             <p className="text-xs text-muted-foreground">
               Generating a category...

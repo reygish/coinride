@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Bell, Plus } from "lucide-react";
-import { cn } from "@/lib/utils/utils";
+import { cn } from "@/lib/utils";
 import { useUser } from "@/app/_components/providers/UserProvider";
 
 type TopbarProps = {

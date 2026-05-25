@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { ThemeProvider } from "next-themes";
 import { getAuthedServerClient } from "@/lib/auth/auth";
 import { UserProvider } from "./_components/providers/UserProvider";
+import { CategoryProvider } from "./_components/providers/CategoryProvider";
 import "./global.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -25,7 +26,11 @@ const geistSans = Geist({
 
 async function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { user } = await getAuthedServerClient();
-  return <UserProvider user={user}>{children}</UserProvider>;
+  return (
+    <UserProvider user={user}>
+      <CategoryProvider>{children}</CategoryProvider>
+    </UserProvider>
+  );
 }
 
 export default function RootLayout({
