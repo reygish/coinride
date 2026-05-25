@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
-import { Category } from "./types";
-import { getAuthedServerClient } from "../actions/auth";
+import { Category } from "../../types/category";
+import { getAuthedServerClient } from "../auth/auth";
 
 const TABLE = "categories";
 
