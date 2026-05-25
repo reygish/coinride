@@ -3,28 +3,37 @@
 import { useCategories } from "@/app/_components/providers/CategoryProvider";
 import { Transaction } from "../_lib/types";
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
+const DEFAULT_LOCALE = "id-ID";
+
+function formatCurrency(amount: number, currency: string) {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
+    style: "currency",
+    currency,
+  }).format(amount);
+}
 
 function formatDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   });
 }
 
 type TransactionItemProps = {
   transaction: Transaction;
+  currency: string;
 };
 
-export default function TransactionItem({ transaction }: TransactionItemProps) {
+export default function TransactionItem({
+  transaction,
+  currency,
+}: TransactionItemProps) {
   const { categories: categoryOptions, isLoading: isCategoriesLoading } =
     useCategories();
   const amountClass =
@@ -56,7 +65,7 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
       </div>
       <p className={`text-base font-semibold ${amountClass}`}>
         {transaction.type === "expense" ? "-" : "+"}
-        {currencyFormatter.format(Math.abs(transaction.amount))}
+        {formatCurrency(Math.abs(transaction.amount), currency)}
       </p>
     </div>
   );

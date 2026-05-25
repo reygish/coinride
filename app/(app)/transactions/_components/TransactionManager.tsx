@@ -1,11 +1,13 @@
 "use client";
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { classifyTransaction } from "@/lib/classifier/classifyTransaction";
 import FilterTabs from "./FIlterTabs";
 import TransactionList from "./TransactionList";
 import TransactionForm from "./TransactionForm";
 import { createTransaction } from "../_lib/queries";
+import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@/app/_components/providers/UserProvider";
 import {
   Transaction,
   TransactionFilter,
@@ -30,6 +32,26 @@ export default function TransactionManager({
   const [isLoading, setIsLoading] = useState(initialTransactions.length === 0);
   const [isRefetching, setIsRefetching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currency, setCurrency] = useState("IDR");
+  const { user: currentUser } = useUser();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const loadCurrency = async () => {
+      if (!currentUser) return;
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("currency")
+        .eq("user_id", currentUser.id)
+        .single();
+
+      if (data?.currency) {
+        setCurrency(data.currency);
+      }
+    };
+
+    loadCurrency();
+  }, [currentUser, supabase]);
 
   // SEARCH
   useEffect(() => {
@@ -85,6 +107,7 @@ export default function TransactionManager({
     try {
       const result = await createTransaction(payload);
       setTransactions((prev) => [Transaction, ...prev]);
+      window.dispatchEvent(new Event("coinride:xp-updated"));
     } catch (createError) {
       setError("We could not save the transaction. Please try again.");
       console.error(createError);
@@ -156,6 +179,7 @@ export default function TransactionManager({
           transactions={filteredTransactions}
           loading={isLoading}
           error={error}
+          currency={currency}
           // onRetry={() => refreshTransactions()}
         />
       </div>

@@ -11,10 +11,10 @@ import { id } from "date-fns/locale"; // Locale Indonesia untuk format tanggal
  * Format angka menjadi string rupiah.
  * Contoh: 15000 → "Rp 15.000"
  */
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number, currency = "IDR"): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
-    currency: "IDR",
+    currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);

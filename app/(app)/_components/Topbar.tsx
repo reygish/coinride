@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { Bell, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/app/_components/providers/UserProvider";
 
 type TopbarProps = {
@@ -11,22 +13,51 @@ type TopbarProps = {
   notificationCount?: number;
 };
 
-function formatCurrency(amount: number) {
+function formatCurrency(amount: number, currency: string) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
-    currency: "IDR",
+    currency,
     maximumFractionDigits: 0,
   }).format(amount);
 }
 
 export default function Topbar({
   className,
-  availableBalance = 0,
+  availableBalance,
   notificationCount = 0,
 }: TopbarProps) {
   const { user } = useUser();
+  const supabase = createClient();
+  const [currency, setCurrency] = useState("IDR");
+  const [balance, setBalance] = useState(availableBalance ?? 0);
   const username = user?.email?.split("@")[0] || "Guest";
   const avatarUrl = user?.user_metadata?.avatar_url;
+
+  useEffect(() => {
+    const loadProfileMeta = async () => {
+      if (!user || availableBalance !== undefined) return;
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("currency,available_balance")
+        .eq("user_id", user.id)
+        .single();
+
+      if (data?.currency) {
+        setCurrency(data.currency);
+      }
+      if (typeof data?.available_balance === "number") {
+        setBalance(data.available_balance);
+      }
+    };
+
+    loadProfileMeta();
+  }, [availableBalance, supabase, user]);
+
+  useEffect(() => {
+    if (availableBalance !== undefined) {
+      setBalance(availableBalance);
+    }
+  }, [availableBalance]);
 
   const initials =
     username
@@ -53,7 +84,7 @@ export default function Topbar({
             swap Link for a button and handle it in the parent layout.
           */}
           <Link
-            href="/dashboard/transactions"
+            href="/transactions"
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
@@ -64,7 +95,7 @@ export default function Topbar({
               Current Balance
             </span>
             <span className="text-sm font-semibold text-foreground">
-              {formatCurrency(availableBalance)}
+              {formatCurrency(balance, currency)}
             </span>
           </div>
         </div>

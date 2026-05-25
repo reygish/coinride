@@ -2,11 +2,35 @@ import { User, Mail, Pencil, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-const UserProfileCard = ({ user, onEdit }) => {
+export interface UserProfile {
+  id: string;
+
+  user_id: string;
+  full_name: string;
+  email: string;
+
+  profile_picture_url: string | null;
+  bio: string | null;
+
+  total_balance: number;
+  available_balance: number;
+
+  currency: string;
+
+  dark_mode: boolean;
+  receive_notifications: boolean;
+
+  created_at: string;
+}
+
+type UserProfileCardProps = {
+  user: UserProfile | null;
+  onEdit: () => void;
+};
+
+const UserProfileCard = ({ user, onEdit }: UserProfileCardProps) => {
   const router = useRouter();
   const supabase = createClient();
-
-  console.log(user);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -16,14 +40,14 @@ const UserProfileCard = ({ user, onEdit }) => {
   return (
     <div className="w-[320px] p-6 rounded-2xl shadow-lg bg-white text-center space-y-3">
       <img
-        src={user?.avatar?.trim() ? user.avatar : "https://i.pravatar.cc/150"}
+        src={"https://i.pravatar.cc/150"}
         alt="avatar"
         className="w-24 h-24 rounded-full mx-auto object-cover"
       />
 
-      <h2 className="text-xl font-semibold flex items-center justify-center gap-2">
+      <h2 className="text-gray-900 font-semibold flex items-center justify-center gap-2">
         <User size={18} />
-        {user?.full_name}
+        {user?.full_name || "Full Name"}
       </h2>
 
       <p className="text-gray-500 flex items-center justify-center gap-2 text-sm">
