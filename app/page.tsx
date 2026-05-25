@@ -1,5 +1,5 @@
-import CurrentYear from "@/components/currentYear";
-import features from "@/lib/features";
+import CurrentYear from "@/components/CurrentYear";
+import features from "@/lib/utils/features";
 import Link from "next/link";
 
 export default function Home() {
@@ -14,13 +14,13 @@ export default function Home() {
         </p>
         <div className="flex gap-4">
           <Link
-            href="/auth/login"
+            href="/login"
             className="bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition"
           >
             Get Started
           </Link>
           <Link
-            href="/auth/register"
+            href="/register"
             className="border border-primary text-primary px-6 py-3 rounded-lg font-medium hover:bg-secondary transition"
           >
             Sign Up

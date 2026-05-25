@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { Suspense } from "react";
 import { ThemeProvider } from "next-themes";
-import "./globals.css";
+import { getAuthedServerClient } from "@/lib/auth/auth";
+import { UserProvider } from "./_components/providers/UserProvider";
+import { CategoryProvider } from "./_components/providers/CategoryProvider";
+import "./global.css";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -10,7 +14,8 @@ const defaultUrl = process.env.VERCEL_URL
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "CoinRide",
-  description: "CoinRide - Money Management App with AI Integrated Topic Categorization",
+  description:
+    "CoinRide - Money Management App with AI Integrated Topic Categorization",
 };
 
 const geistSans = Geist({
@@ -18,6 +23,15 @@ const geistSans = Geist({
   display: "swap",
   subsets: ["latin"],
 });
+
+async function AuthWrapper({ children }: { children: React.ReactNode }) {
+  const { user } = await getAuthedServerClient();
+  return (
+    <UserProvider user={user}>
+      <CategoryProvider>{children}</CategoryProvider>
+    </UserProvider>
+  );
+}
 
 export default function RootLayout({
   children,
@@ -33,7 +47,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <Suspense>
+            <AuthWrapper>{children}</AuthWrapper>
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
