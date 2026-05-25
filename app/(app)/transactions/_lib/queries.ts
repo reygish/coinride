@@ -4,6 +4,7 @@ import { getAuthedServerClient } from "@/lib/auth/auth";
 import { createClient } from "@/lib/supabase/client";
 
 const TABLE = "transactions";
+const XP_PER_LEVEL = 1000;
 
 // GET USER TRANSACTIONS
 export async function listTransactions(): Promise<Transaction[]> {
@@ -62,7 +63,53 @@ export async function createTransaction(
     throw insertError;
   }
 
+  await applyTransactionXP(user.id);
+
   return data as Transaction;
+}
+
+function toUtcDateString(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+async function applyTransactionXP(userId: string) {
+  const supabase = createClient();
+
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("total_xp,level,streak_count,last_streak_date")
+    .eq("user_id", userId)
+    .single();
+
+  const today = toUtcDateString(new Date());
+  const yesterday = toUtcDateString(
+    new Date(Date.now() - 24 * 60 * 60 * 1000),
+  );
+
+  const prevStreakDate = profile?.last_streak_date ?? null;
+  const prevStreak = Number(profile?.streak_count ?? 0);
+  const prevXp = Number(profile?.total_xp ?? 0);
+
+  let nextStreak = 1;
+  if (prevStreakDate === today) {
+    nextStreak = Math.max(prevStreak, 1);
+  } else if (prevStreakDate === yesterday) {
+    nextStreak = Math.max(prevStreak + 1, 1);
+  }
+
+  const xpGain = 10 * nextStreak;
+  const nextXp = prevXp + xpGain;
+  const nextLevel = Math.floor(nextXp / XP_PER_LEVEL) + 1;
+
+  await supabase
+    .from("user_profiles")
+    .update({
+      total_xp: nextXp,
+      level: nextLevel,
+      streak_count: nextStreak,
+      last_streak_date: today,
+    })
+    .eq("user_id", userId);
 }
 
 // ===================================================================

@@ -1,5 +1,3 @@
-import CurrentYear from "@/components/CurrentYear";
-import features from "@/lib/utils/features";
 import Link from "next/link";
 
 export default function Home() {

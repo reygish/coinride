@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@/app/_components/providers/UserProvider";
 import ThemeToggle from "./ThemeToggle";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
@@ -50,13 +52,11 @@ const NAV: NavSection[] = [
         label: "Budgets",
         href: "/budgets",
         icon: Target,
-        disabled: true,
       },
       {
         label: "Saving Goals",
         href: "/saving-goals",
         icon: PiggyBank,
-        disabled: true,
       },
     ],
   },
@@ -67,13 +67,11 @@ const NAV: NavSection[] = [
         label: "Achievements",
         href: "/achievements",
         icon: Trophy,
-        disabled: true,
       },
       {
         label: "Leaderboard",
         href: "/leaderboard",
         icon: Medal,
-        disabled: true,
       },
     ],
   },
@@ -84,14 +82,12 @@ const NAV: NavSection[] = [
         label: "Notifications",
         href: "/notifications",
         icon: Bell,
-        disabled: true,
       },
       { label: "Profile", href: "/profile", icon: User },
       {
         label: "Settings",
         href: "/settings",
         icon: Settings,
-        disabled: true,
       },
     ],
   },
@@ -187,6 +183,8 @@ function useGamification(): {
   xpToNextLevel: number;
   unlockedCount: number;
 } {
+  const supabase = createClient();
+  const { user } = useUser();
   const [streak, setStreak] = useState<number>(0);
   const [level, setLevel] = useState<number>(1);
   const [xpInCurrentLevel, setXpInCurrentLevel] = useState<number>(0);
@@ -194,43 +192,40 @@ function useGamification(): {
   const [unlockedCount, setUnlockedCount] = useState<number>(0);
 
   useEffect(() => {
-    // Simple local/demo implementation. In a real app this would come from an API or global state.
-    try {
-      const rawTotalXP = localStorage.getItem("totalXP");
-      const totalXP = rawTotalXP ? parseInt(rawTotalXP, 10) : 1250; // default demo XP
+    if (!user) return;
+    const loadGamification = async () => {
       const xpPerLevel = 1000;
+      const [{ data: profile }, { data: achievements }] = await Promise.all([
+        supabase
+          .from("user_profiles")
+          .select("total_xp,level,streak_count")
+          .eq("user_id", user.id)
+          .single(),
+        supabase
+          .from("achievements")
+          .select("id")
+          .eq("user_id", user.id),
+      ]);
 
-      const computedLevel = Math.floor(totalXP / xpPerLevel) + 1;
-      const computedXpInLevel = totalXP % xpPerLevel;
+      const totalXp = Number(profile?.total_xp ?? 0);
+      const computedLevel = Number(profile?.level ?? 1) || 1;
+      const computedXpInLevel = totalXp % xpPerLevel;
 
       setLevel(computedLevel);
       setXpInCurrentLevel(computedXpInLevel);
       setXpToNextLevel(xpPerLevel);
+      setStreak(Number(profile?.streak_count ?? 0));
+      setUnlockedCount(Array.isArray(achievements) ? achievements.length : 0);
+    };
 
-      const rawStreak = localStorage.getItem("streak");
-      setStreak(rawStreak ? parseInt(rawStreak, 10) : 3);
+    loadGamification();
+    const handleXpUpdate = () => {
+      loadGamification();
+    };
 
-      const rawBadges = localStorage.getItem("badges");
-      // badges stored as JSON array of ids/names in localStorage for demo
-      if (rawBadges) {
-        try {
-          const parsed = JSON.parse(rawBadges);
-          setUnlockedCount(Array.isArray(parsed) ? parsed.length : 0);
-        } catch {
-          setUnlockedCount(0);
-        }
-      } else {
-        setUnlockedCount(4);
-      }
-    } catch (e) {
-      // fallback defaults
-      setStreak(0);
-      setLevel(1);
-      setXpInCurrentLevel(0);
-      setXpToNextLevel(1000);
-      setUnlockedCount(0);
-    }
-  }, []);
+    window.addEventListener("coinride:xp-updated", handleXpUpdate);
+    return () => window.removeEventListener("coinride:xp-updated", handleXpUpdate);
+  }, [supabase, user]);
 
   return { streak, level, xpInCurrentLevel, xpToNextLevel, unlockedCount };
 }

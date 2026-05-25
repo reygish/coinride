@@ -7,6 +7,7 @@ type TransactionListProps = {
   transactions: Transaction[];
   loading: boolean;
   error: string | null;
+  currency: string;
   // onRetry: () => void;
 };
 
@@ -14,6 +15,7 @@ export default function TransactionList({
   transactions,
   loading,
   error,
+  currency,
   // onRetry,
 }: TransactionListProps) {
   if (loading) {
@@ -65,7 +67,11 @@ export default function TransactionList({
   return (
     <div className="space-y-3">
       {transactions.map((transaction) => (
-        <TransactionItem key={transaction.id} transaction={transaction} />
+        <TransactionItem
+          key={transaction.id}
+          transaction={transaction}
+          currency={currency}
+        />
       ))}
     </div>
   );

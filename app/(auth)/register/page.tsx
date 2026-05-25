@@ -32,7 +32,7 @@ export default function RegisterPage() {
       }
 
       alert("Register success, please login");
-      router.push("/auth/login");
+      router.push("/login");
     } catch (err: unknown) {
       console.error("Register request failed", err);
       alert("Unable to reach the authentication service.");
