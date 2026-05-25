@@ -34,7 +34,7 @@ const UserProfileCard = ({ user, onEdit }: UserProfileCardProps) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.replace("/auth/login");
+    router.replace("/login");
   };
 
   return (
