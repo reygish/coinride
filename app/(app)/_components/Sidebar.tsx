@@ -39,13 +39,6 @@ const NAV: NavSection[] = [
     title: "Overview",
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      // Tweak: Update this route once you add the page.
-      {
-        label: "Analytics",
-        href: "/analytics",
-        icon: BarChart3,
-        disabled: true,
-      },
     ],
   },
   {
