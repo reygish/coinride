@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Plus } from "lucide-react";
+import { Bell, Menu, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ type TopbarProps = {
   className?: string;
   availableBalance?: number;
   notificationCount?: number;
+  onMenuToggle: () => void;
 };
 
 function formatCurrency(amount: number, currency: string) {
@@ -26,6 +27,7 @@ export default function Topbar({
   className,
   availableBalance,
   notificationCount = 0,
+  onMenuToggle,
 }: TopbarProps) {
   const { user } = useUser();
   const supabase = createClient();
@@ -107,7 +109,15 @@ export default function Topbar({
     >
       <div className="flex h-full items-center justify-between gap-4 px-6">
         <div className="flex items-center gap-4">
-          {/* Tweak: Point this to your preferred landing route */}
+          <button
+            type="button"
+            onClick={onMenuToggle}
+            className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground transition hover:bg-muted lg:hidden"
+            aria-label="Toggle sidebar"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+
           <Link
             href="/dashboard"
             className="text-lg font-light tracking-[-0.02em] text-foreground"

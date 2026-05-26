@@ -22,6 +22,8 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 
 type SidebarProps = {
   className?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 };
 
 type NavItem = {
@@ -120,19 +122,12 @@ function SidebarItem({ label, href, icon: Icon, disabled }: NavItem) {
   );
 }
 
-export default function Sidebar({ className }: SidebarProps) {
+export default function Sidebar({ className, isOpen, onClose }: SidebarProps) {
   const { streak, level, xpInCurrentLevel, xpToNextLevel, unlockedCount } =
     useGamification();
 
-  return (
-    <aside
-      className={cn(
-        "min-h-0 w-72 shrink-0 overflow-y-auto border-r border-border bg-background",
-        "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
-        className,
-      )}
-    >
-      {/* level */}
+  const sidebarContent = (
+    <>
       <div className="mx-3 mt-4 rounded-lg border border-border bg-card p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -184,7 +179,35 @@ export default function Sidebar({ className }: SidebarProps) {
           ))}
         </nav>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      {isOpen ? (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={onClose}
+          />
+          <aside className="relative z-50 h-full w-72 overflow-y-auto border-r border-border bg-background shadow-xl">
+            {sidebarContent}
+          </aside>
+        </div>
+      ) : null}
+
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden min-h-0 w-72 shrink-0 overflow-y-auto border-r border-border bg-background lg:block",
+          "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
+          className,
+        )}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }
 function useGamification(): {
