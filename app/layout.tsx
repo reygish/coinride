@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     title: "CoinRide",
     description: "CoinRide - Money Management App with AI Integrated Topic Categorization",
     siteName: "CoinRide",
-    images: [{ url: defaultUrl + "/og.png" }]
   }
 };
 
