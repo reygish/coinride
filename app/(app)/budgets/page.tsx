@@ -64,6 +64,8 @@ export default function BudgetsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editAmount, setEditAmount] = useState("");
   const [form, setForm] = useState<BudgetFormState>({
     categoryId: "",
     amount: "",
@@ -107,7 +109,7 @@ export default function BudgetsPage() {
       }
 
       setCategories((categoryRows ?? []) as Category[]);
-      setBudgets((budgetRows ?? []) as Budget[]);
+      setBudgets((budgetRows ?? []) as unknown as Budget[]);
       setIsLoading(false);
     };
 
@@ -152,7 +154,7 @@ export default function BudgetsPage() {
     }
 
     if (data) {
-      setBudgets((prev) => [data as Budget, ...prev]);
+      setBudgets((prev) => [data as unknown as Budget, ...prev]);
       setForm((prev) => ({
         ...prev,
         amount: "",
@@ -160,6 +162,60 @@ export default function BudgetsPage() {
     }
 
     setIsSaving(false);
+  };
+
+  const handleDelete = async (budgetId: string) => {
+    if (!user) return;
+    await supabase
+      .from("budgets")
+      .delete()
+      .eq("id", budgetId)
+      .eq("user_id", user.id);
+    setBudgets((prev) => prev.filter((item) => item.id !== budgetId));
+  };
+
+  const startEdit = (budget: Budget) => {
+    setEditingId(budget.id);
+    setEditAmount(String(budget.amount));
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditAmount("");
+  };
+
+  const handleUpdate = async (budget: Budget) => {
+    if (!user) return;
+    const nextAmount = Number.parseFloat(editAmount);
+    if (Number.isNaN(nextAmount)) {
+      setError("Please enter a valid amount.");
+      return;
+    }
+
+    setIsSaving(true);
+    const { data, error: updateError } = await supabase
+      .from("budgets")
+      .update({ amount: nextAmount })
+      .eq("id", budget.id)
+      .eq("user_id", user.id)
+      .select(
+        "id,category_id,amount,period,start_date,end_date,categories(id,name,color,icon)",
+      )
+      .single();
+
+    if (updateError) {
+      setError("Unable to update budget.");
+      setIsSaving(false);
+      return;
+    }
+
+    if (data) {
+      setBudgets((prev) =>
+        prev.map((item) => (item.id === budget.id ? (data as unknown as Budget) : item)),
+      );
+    }
+    setIsSaving(false);
+    cancelEdit();
   };
 
   const summary = useMemo(() => {
@@ -172,16 +228,20 @@ export default function BudgetsPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">Budgets</h1>
+        <h1 className="text-2xl font-light tracking-[-0.02em] text-foreground">
+          Budgets
+        </h1>
         <p className="text-sm text-muted-foreground">
           Set spending limits per category and keep your goals on track.
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
-        <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-5">
           <div>
-            <h2 className="text-lg font-medium text-foreground">New Budget</h2>
+            <h2 className="text-lg font-light tracking-[-0.02em] text-foreground">
+              New Budget
+            </h2>
             <p className="text-sm text-muted-foreground">
               Choose a category, amount, and period.
             </p>
@@ -199,7 +259,7 @@ export default function BudgetsPage() {
                   categoryId: event.target.value,
                 }))
               }
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
             >
               <option value="">Select category</option>
               {categories.map((category) => (
@@ -222,7 +282,7 @@ export default function BudgetsPage() {
                   amount: event.target.value,
                 }))
               }
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
               placeholder="0"
             />
 
@@ -237,7 +297,7 @@ export default function BudgetsPage() {
                   period: event.target.value as BudgetPeriod,
                 }))
               }
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
             >
               {PERIOD_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -258,7 +318,7 @@ export default function BudgetsPage() {
                   startDate: event.target.value,
                 }))
               }
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
             />
           </div>
 
@@ -268,16 +328,19 @@ export default function BudgetsPage() {
             type="button"
             onClick={handleSubmit}
             disabled={isSaving}
-            className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
           >
             {isSaving ? "Saving..." : "Create Budget"}
           </button>
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4">
             <p className="text-xs text-muted-foreground">Total budgeted</p>
-            <p className="text-2xl font-semibold text-foreground">
+            <p
+              className="text-2xl font-light tracking-[-0.02em] text-foreground"
+              style={{ fontVariantNumeric: "tabular-nums" }}
+            >
               {formatCurrency(summary, currency)}
             </p>
           </div>
@@ -295,10 +358,10 @@ export default function BudgetsPage() {
               {budgets.map((budget) => (
                 <div
                   key={budget.id}
-                  className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3"
+                  className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
                 >
                   <div>
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-sm font-light tracking-[-0.01em] text-foreground">
                       {budget.categories?.name || "Uncategorized"}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -310,9 +373,60 @@ export default function BudgetsPage() {
                       })}
                     </p>
                   </div>
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatCurrency(Number(budget.amount), currency)}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {editingId === budget.id ? (
+                      <input
+                        type="number"
+                        min="0"
+                        value={editAmount}
+                        onChange={(event) => setEditAmount(event.target.value)}
+                        className="w-28 rounded-lg border border-input bg-background px-2 py-1 text-sm text-foreground"
+                      />
+                    ) : (
+                      <span
+                        className="text-sm font-light text-foreground"
+                        style={{ fontVariantNumeric: "tabular-nums" }}
+                      >
+                        {formatCurrency(Number(budget.amount), currency)}
+                      </span>
+                    )}
+                    {editingId === budget.id ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdate(budget)}
+                          disabled={isSaving}
+                          className="text-xs font-semibold text-primary"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          className="text-xs text-muted-foreground"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(budget)}
+                          className="text-xs font-semibold text-primary"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(budget.id)}
+                          className="text-xs text-muted-foreground"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

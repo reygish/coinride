@@ -41,38 +41,46 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-secondary to-background flex items-center justify-center px-6">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="text-4xl font-bold text-primary">
-            CoinRide
-          </Link>
-          <p className="text-muted-foreground mt-2">
-            Welcome back! Sign in to continue.
-          </p>
-        </div>
+    <main className="min-h-screen px-6">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='600' viewBox='0 0 1600 600'%3E%3Cdefs%3E%3Cfilter id='blur'%3E%3CfeGaussianBlur stdDeviation='60'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='1600' height='600' fill='transparent'/%3E%3Cg filter='url(%23blur)'%3E%3Cellipse cx='200' cy='140' rx='260' ry='140' fill='%23533afd' fill-opacity='0.08'/%3E%3Cellipse cx='500' cy='120' rx='260' ry='160' fill='%23533afd' fill-opacity='0.12'/%3E%3Cellipse cx='820' cy='150' rx='320' ry='180' fill='%23c9c4ff' fill-opacity='0.15'/%3E%3Cellipse cx='1120' cy='140' rx='260' ry='160' fill='%23533afd' fill-opacity='0.1'/%3E%3Cellipse cx='1380' cy='180' rx='240' ry='180' fill='%23ea2261' fill-opacity='0.08'/%3E%3C/g%3E%3C/svg%3E\")",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+      <div className="relative flex min-h-screen items-center justify-center">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <Link href="/" className="text-4xl font-light tracking-[-0.04em]">
+              CoinRide
+            </Link>
+            <p className="text-muted-foreground mt-2 text-sm">
+              Welcome back. Sign in to continue.
+            </p>
+          </div>
 
-        {/* Login Form */}
-        <div className="bg-card rounded-2xl shadow-lg p-8 border border-border">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-foreground mb-2"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-lg border border-input focus:border-primary focus:ring-2 focus:ring-ring outline-none transition"
-                placeholder="you@example.com"
-              />
-            </div>
+          <div className="bg-card rounded-lg shadow-[rgba(0,55,112,0.08)_0_8px_24px,rgba(0,55,112,0.04)_0_2px_6px] p-8 border border-border">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-foreground mb-2"
+                >
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-md border border-input focus:border-primary focus:ring-2 focus:ring-ring outline-none transition"
+                  placeholder="you@example.com"
+                />
+              </div>
 
             <div>
               <label
@@ -81,16 +89,16 @@ export default function LoginPage() {
               >
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-lg border border-input focus:border-primary focus:ring-2 focus:ring-ring outline-none transition"
-                placeholder="Enter your password"
-              />
-            </div>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-md border border-input focus:border-primary focus:ring-2 focus:ring-ring outline-none transition"
+                  placeholder="Enter your password"
+                />
+              </div>
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center">
@@ -111,7 +119,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-primary text-primary-foreground py-2.5 rounded-full text-sm font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Signing in..." : "Sign In"}
             </button>
@@ -132,7 +140,7 @@ export default function LoginPage() {
             <div className="mt-6">
               <button
                 type="button"
-                className="flex w-full items-center justify-center px-4 py-3 border border-border rounded-lg hover:bg-muted transition"
+                className="flex w-full items-center justify-center px-4 py-2.5 border border-border rounded-full hover:bg-muted transition"
                 onClick={handleGoogleLogin}
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -169,6 +177,7 @@ export default function LoginPage() {
             Sign up
           </Link>
         </p>
+        </div>
       </div>
     </main>
   );

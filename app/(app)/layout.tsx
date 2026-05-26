@@ -5,12 +5,12 @@ import Sidebar from "./_components/Sidebar";
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
-      <Topbar/>
+      <Topbar />
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        <Sidebar/>
+        <Sidebar />
 
-        <main className="min-w-0 flex-1 min-h-0 overflow-y-auto">
+        <main className="min-w-0 flex-1 min-h-0 overflow-y-auto bg-background">
           {children}
         </main>
       </div>

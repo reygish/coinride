@@ -5,7 +5,7 @@ import { classifyTransaction } from "@/lib/classifier/classifyTransaction";
 import FilterTabs from "./FIlterTabs";
 import TransactionList from "./TransactionList";
 import TransactionForm from "./TransactionForm";
-import { createTransaction } from "../_lib/queries";
+import { createTransaction, deleteTransaction } from "../_lib/queries";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/app/_components/providers/UserProvider";
 import {
@@ -108,9 +108,25 @@ export default function TransactionManager({
       const result = await createTransaction(payload);
       setTransactions((prev) => [Transaction, ...prev]);
       window.dispatchEvent(new Event("coinride:xp-updated"));
+      window.dispatchEvent(new Event("coinride:balance-updated"));
     } catch (createError) {
       setError("We could not save the transaction. Please try again.");
       console.error(createError);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await deleteTransaction(id);
+      setTransactions((prev) => prev.filter((item) => item.id !== id));
+      window.dispatchEvent(new Event("coinride:balance-updated"));
+    } catch (deleteError) {
+      setError("We could not delete the transaction. Please try again.");
+      console.error(deleteError);
     } finally {
       setIsSubmitting(false);
     }
@@ -124,9 +140,9 @@ export default function TransactionManager({
           counts={counts}
           onFilterChange={setFilter}
         />
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="rounded-lg border border-border bg-card p-5">
           <div className="space-y-1">
-            <h2 className="text-lg font-medium text-foreground">
+            <h2 className="text-lg font-light tracking-[-0.02em] text-foreground">
               Add Transaction
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -145,8 +161,8 @@ export default function TransactionManager({
       </div>
 
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex w-full items-center gap-2 rounded-xl border border-input bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring sm:w-auto">
+        <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring sm:w-auto">
             <svg
               aria-hidden="true"
               viewBox="0 0 20 20"
@@ -180,6 +196,7 @@ export default function TransactionManager({
           loading={isLoading}
           error={error}
           currency={currency}
+          onDelete={handleDeleteTransaction}
           // onRetry={() => refreshTransactions()}
         />
       </div>

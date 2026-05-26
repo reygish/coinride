@@ -202,16 +202,20 @@ export default function SavingGoalsPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">Saving Goals</h1>
+        <h1 className="text-2xl font-light tracking-[-0.02em] text-foreground">
+          Saving Goals
+        </h1>
         <p className="text-sm text-muted-foreground">
           Track progress toward milestones and keep your savings on pace.
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
-        <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-5">
           <div>
-            <h2 className="text-lg font-medium text-foreground">New Goal</h2>
+            <h2 className="text-lg font-light tracking-[-0.02em] text-foreground">
+              New Goal
+            </h2>
             <p className="text-sm text-muted-foreground">
               Set a target and optional start balance.
             </p>
@@ -229,7 +233,7 @@ export default function SavingGoalsPage() {
                   title: event.target.value,
                 }))
               }
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
               placeholder="Emergency fund"
             />
 
@@ -246,7 +250,7 @@ export default function SavingGoalsPage() {
                   targetAmount: event.target.value,
                 }))
               }
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
               placeholder="0"
             />
 
@@ -263,7 +267,7 @@ export default function SavingGoalsPage() {
                   currentAmount: event.target.value,
                 }))
               }
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
               placeholder="0"
             />
 
@@ -279,7 +283,7 @@ export default function SavingGoalsPage() {
                   targetDate: event.target.value,
                 }))
               }
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
             />
           </div>
 
@@ -289,16 +293,19 @@ export default function SavingGoalsPage() {
             type="button"
             onClick={handleSubmit}
             disabled={isSaving}
-            className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
           >
             {isSaving ? "Saving..." : "Create Goal"}
           </button>
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4">
             <p className="text-xs text-muted-foreground">Total saved</p>
-            <p className="text-2xl font-semibold text-foreground">
+            <p
+              className="text-2xl font-light tracking-[-0.02em] text-foreground"
+              style={{ fontVariantNumeric: "tabular-nums" }}
+            >
               {formatCurrency(totals.totalSaved, currency)}
             </p>
             <p className="text-sm text-muted-foreground">
@@ -307,11 +314,11 @@ export default function SavingGoalsPage() {
           </div>
 
           {isLoading ? (
-            <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+            <div className="rounded-lg border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
               Loading goals...
             </div>
           ) : goals.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-6 text-sm text-muted-foreground">
+            <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-sm text-muted-foreground">
               No goals yet. Start one to stay motivated.
             </div>
           ) : (
@@ -326,18 +333,24 @@ export default function SavingGoalsPage() {
                 return (
                   <div
                     key={goal.id}
-                    className="rounded-2xl border border-border bg-card px-4 py-3"
+                    className="rounded-lg border border-border bg-card px-4 py-3"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="text-sm font-medium text-foreground">
+                        <p className="text-sm font-light tracking-[-0.01em] text-foreground">
                           {goal.title}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {formatCurrency(goal.current_amount, currency)} saved
+                          <span style={{ fontVariantNumeric: "tabular-nums" }}>
+                            {formatCurrency(goal.current_amount, currency)}
+                          </span>
+                          {" "}saved
                         </p>
                       </div>
-                      <span className="text-xs font-semibold text-muted-foreground">
+                      <span
+                        className="text-xs font-semibold text-muted-foreground"
+                        style={{ fontVariantNumeric: "tabular-nums" }}
+                      >
                         {Math.round(progress)}%
                       </span>
                     </div>
@@ -362,13 +375,13 @@ export default function SavingGoalsPage() {
                               [goal.id]: event.target.value,
                             }))
                           }
-                          className="w-32 rounded-lg border border-input bg-background px-3 py-2 text-xs text-foreground"
+                          className="w-32 rounded-md border border-input bg-background px-3 py-2 text-xs text-foreground"
                         />
                         <button
                           type="button"
                           onClick={() => handleUpdateCurrentAmount(goal)}
                           disabled={isSaving}
-                          className="inline-flex items-center justify-center rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+                          className="inline-flex items-center justify-center rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
                         >
                           Update
                         </button>
@@ -377,13 +390,13 @@ export default function SavingGoalsPage() {
                         type="button"
                         onClick={() => handleDeleteGoal(goal.id)}
                         disabled={deletingId === goal.id}
-                        className="inline-flex items-center justify-center rounded-lg border border-destructive/40 px-3 py-2 text-xs font-semibold text-destructive transition hover:bg-destructive/10 disabled:opacity-60"
+                        className="inline-flex items-center justify-center rounded-full border border-border px-3 py-2 text-xs font-semibold text-foreground transition hover:bg-muted disabled:opacity-60"
                       >
                         {deletingId === goal.id ? "Deleting..." : "Delete"}
                       </button>
                     </div>
                     <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>
+                      <span style={{ fontVariantNumeric: "tabular-nums" }}>
                         Target {formatCurrency(goal.target_amount, currency)}
                       </span>
                       <span>

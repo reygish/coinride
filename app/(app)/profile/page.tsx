@@ -21,7 +21,6 @@ export default function Page() {
   const supabase = createClient();
   const { user: currentUser } = useUser();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
 
   const loadProfile = async () => {
     // protect route
@@ -38,9 +37,7 @@ export default function Page() {
 
     if (data) {
       setUserProfile(data);
-      setIsEditing(false);
     } else {
-      setIsEditing(true);
     }
   };
 
@@ -49,8 +46,12 @@ export default function Page() {
   }, [currentUser]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      {isEditing ? (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto flex max-w-4xl flex-col items-center gap-8 px-6 py-10">
+        <div className="w-full max-w-md rounded-lg border border-border bg-card p-4">
+          <UserProfileCard user={userProfile} />
+        </div>
+
         <EditProfileForm
           user={
             userProfile
@@ -88,16 +89,11 @@ export default function Page() {
             if (data) {
               setUserProfile(data);
             }
-            setIsEditing(false);
           }}
-          onCancel={() => setIsEditing(false)}
+          onCancel={() => undefined}
+          showCancel={false}
         />
-      ) : (
-        <UserProfileCard
-          user={userProfile}
-          onEdit={() => setIsEditing(true)}
-        />
-      )}
+      </div>
     </div>
   );
 }

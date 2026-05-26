@@ -39,18 +39,20 @@ export default function LeaderboardPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">Leaderboard</h1>
+        <h1 className="text-2xl font-light tracking-[-0.02em] text-foreground">
+          Leaderboard
+        </h1>
         <p className="text-sm text-muted-foreground">
           See who is building the biggest balance streaks.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
           Loading leaderboard...
         </div>
       ) : entries.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-6 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-border bg-muted/30 p-6 text-sm text-muted-foreground">
           No leaderboard data available yet.
         </div>
       ) : (
@@ -60,17 +62,20 @@ export default function LeaderboardPage() {
             return (
               <div
                 key={entry.id}
-                className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3"
+                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground">
                     {rank}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="text-sm font-light tracking-[-0.01em] text-foreground">
                       {entry.full_name}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p
+                      className="text-xs text-muted-foreground"
+                      style={{ fontVariantNumeric: "tabular-nums" }}
+                    >
                       Level {entry.level} · {entry.total_xp} XP
                     </p>
                   </div>

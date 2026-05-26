@@ -1,13 +1,14 @@
 "use client";
 
 import TransactionItem from "./TransactionItem";
-import { Transaction } from "./types";
+import { Transaction } from "../_lib/types";
 
 type TransactionListProps = {
   transactions: Transaction[];
   loading: boolean;
   error: string | null;
   currency: string;
+  onDelete: (id: string) => void;
   // onRetry: () => void;
 };
 
@@ -16,6 +17,7 @@ export default function TransactionList({
   loading,
   error,
   currency,
+  onDelete,
   // onRetry,
 }: TransactionListProps) {
   if (loading) {
@@ -71,6 +73,7 @@ export default function TransactionList({
           key={transaction.id}
           transaction={transaction}
           currency={currency}
+          onDelete={onDelete}
         />
       ))}
     </div>

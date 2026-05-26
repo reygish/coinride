@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import {
-  BarChart3,
   Bell,
+  Flame,
   LayoutDashboard,
   Medal,
   PiggyBank,
@@ -95,7 +95,7 @@ const NAV: NavSection[] = [
 
 function SidebarItem({ label, href, icon: Icon, disabled }: NavItem) {
   const baseClassName =
-    "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-foreground transition";
+    "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-foreground transition";
 
   if (!href || disabled) {
     return (
@@ -127,18 +127,26 @@ export default function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "min-h-0 w-72 shrink-0 overflow-y-auto border-r border-border bg-card",
+        "min-h-0 w-72 shrink-0 overflow-y-auto border-r border-border bg-background",
         "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
         className,
       )}
     >
       {/* level */}
-      <div className="mx-3 mt-4 rounded-xl bg-gradient-to-br from-violet-500/15 to-emerald-500/10 border border-white/8 p-4">
+      <div className="mx-3 mt-4 rounded-lg border border-border bg-card p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Level {level}
           </span>
-          <span className="text-xs text-slate-400">{unlockedCount} badges</span>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Flame className="h-3 w-3 text-orange-500" />
+              {streak}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {unlockedCount} badges
+            </span>
+          </div>
         </div>
         <ProgressBar
           value={xpInCurrentLevel}
@@ -146,7 +154,10 @@ export default function Sidebar({ className }: SidebarProps) {
           color="purple"
           size="sm"
         />
-        <p className="mt-1.5 text-xs text-slate-500">
+        <p
+          className="mt-1.5 text-xs text-muted-foreground"
+          style={{ fontVariantNumeric: "tabular-nums" }}
+        >
           {xpInCurrentLevel} / {xpToNextLevel} XP to Level {level + 1}
         </p>
       </div>
@@ -155,7 +166,7 @@ export default function Sidebar({ className }: SidebarProps) {
         <nav className="space-y-6">
           {NAV.map((section) => (
             <div key={section.title} className="space-y-2">
-              <h2 className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <h2 className="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                 {section.title}
               </h2>
               <div className="">

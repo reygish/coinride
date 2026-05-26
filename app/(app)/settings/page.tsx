@@ -93,13 +93,15 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
+        <h1 className="text-2xl font-light tracking-[-0.02em] text-foreground">
+          Settings
+        </h1>
         <p className="text-sm text-muted-foreground">
           Control your app preferences and notifications.
         </p>
       </div>
 
-      <div className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="space-y-4 rounded-lg border border-border bg-card p-5">
         <div className="space-y-2">
           <label className="text-xs font-semibold uppercase text-muted-foreground">
             Preferred currency
@@ -112,7 +114,7 @@ export default function SettingsPage() {
                 currency: event.target.value,
               }))
             }
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
           >
             {CURRENCY_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -122,9 +124,11 @@ export default function SettingsPage() {
           </select>
         </div>
 
-        <div className="flex items-center justify-between rounded-xl border border-border px-3 py-3">
+        <div className="flex items-center justify-between rounded-md border border-border px-3 py-3">
           <div>
-            <p className="text-sm font-medium text-foreground">Notifications</p>
+            <p className="text-sm font-light tracking-[-0.01em] text-foreground">
+              Notifications
+            </p>
             <p className="text-xs text-muted-foreground">
               Receive reminder and budget alerts.
             </p>
@@ -148,7 +152,7 @@ export default function SettingsPage() {
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
         >
           {isSaving ? "Saving..." : "Save settings"}
         </button>

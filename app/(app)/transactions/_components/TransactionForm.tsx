@@ -213,7 +213,7 @@ export default function TransactionForm({
             type="date"
             value={formState.transaction_date}
             onChange={handleChange}
-            className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
           />
           {fieldErrors.transaction_date && (
             <p className="text-xs text-destructive">
@@ -234,7 +234,7 @@ export default function TransactionForm({
             name="payment_method"
             value={formState.payment_method}
             onChange={handleChange}
-            className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
           >
             <option value="">Select payment method</option>
             {ACCOUNT_OPTIONS.map((option) => (
@@ -259,7 +259,7 @@ export default function TransactionForm({
                   key={type}
                   type="button"
                   onClick={() => handleTypeChange(type)}
-                  className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                  className={`rounded-full border px-3 py-2 text-sm font-medium transition ${
                     formState.type === type
                       ? "border-primary bg-primary/10 text-foreground"
                       : "border-input bg-background text-muted-foreground hover:text-foreground"
@@ -290,7 +290,7 @@ export default function TransactionForm({
             step="0.01"
             value={formState.amount}
             onChange={handleChange}
-            className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
           />
           {fieldErrors.amount && (
             <p className="text-xs text-destructive">{fieldErrors.amount}</p>
@@ -310,7 +310,7 @@ export default function TransactionForm({
             rows={3}
             value={formState.description}
             onChange={handleChange}
-            className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm text-foreground"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
           />
           {fieldErrors.description && (
             <p className="text-xs text-destructive">
@@ -349,7 +349,7 @@ export default function TransactionForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
+        className="w-full rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
       >
         {isSubmitting ? "Saving..." : submitLabel}
       </button>

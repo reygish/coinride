@@ -101,7 +101,10 @@ export function WeeklySpendingChart() {
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted-foreground">
+      <p
+        className="text-xs text-muted-foreground"
+        style={{ fontVariantNumeric: "tabular-nums" }}
+      >
         {formatCurrency(totalSpend, currency)} spent in last 7 days
       </p>
       <ResponsiveContainer width="100%" height={240}>
@@ -109,10 +112,10 @@ export function WeeklySpendingChart() {
           <XAxis dataKey="label" tickLine={false} axisLine={false} />
           <YAxis hide />
           <Tooltip
-            cursor={{ fill: "rgba(148, 163, 184, 0.1)" }}
+            cursor={{ fill: "rgba(83, 58, 253, 0.08)" }}
             formatter={(value) => formatCurrency(Number(value), currency)}
           />
-          <Bar dataKey="total" radius={[8, 8, 0, 0]} fill="#7c3aed" />
+          <Bar dataKey="total" radius={[8, 8, 0, 0]} fill="#533afd" />
         </BarChart>
       </ResponsiveContainer>
     </div>

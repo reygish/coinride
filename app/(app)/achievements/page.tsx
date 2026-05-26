@@ -13,6 +13,33 @@ type Achievement = {
   unlocked_at: string;
 };
 
+const ALL_ACHIEVEMENTS = [
+  {
+    title: "Beginner Badge",
+    description: "Logged your first transaction.",
+  },
+  {
+    title: "Bronze Saver",
+    description: "Reached level 5.",
+  },
+  {
+    title: "Silver Saver",
+    description: "Reached level 10.",
+  },
+  {
+    title: "Gold Saver",
+    description: "Reached level 30.",
+  },
+  {
+    title: "Gold+ Saver",
+    description: "Reached level 50.",
+  },
+  {
+    title: "Diamond Saver",
+    description: "Reached level 80.",
+  },
+];
+
 export default function AchievementsPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -45,53 +72,68 @@ export default function AchievementsPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-foreground">Achievements</h1>
+        <h1 className="text-2xl font-light tracking-[-0.02em] text-foreground">
+          Achievements
+        </h1>
         <p className="text-sm text-muted-foreground">
           Track your milestones and streaks as you manage your finances.
         </p>
       </div>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground">
           Loading achievements...
-        </div>
-      ) : achievements.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-6 text-sm text-muted-foreground">
-          No achievements yet. Keep logging activity to unlock badges.
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {achievements.map((achievement) => (
-            <div
-              key={achievement.id}
-              className="rounded-2xl border border-border bg-card p-4 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {achievement.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {achievement.description}
-                  </p>
+          {ALL_ACHIEVEMENTS.map((achievement) => {
+            const earned = achievements.find(
+              (item) => item.title === achievement.title,
+            );
+            return (
+              <div
+                key={achievement.title}
+                className={`rounded-lg border border-border p-4 ${
+                  earned
+                    ? "bg-card"
+                    : "bg-muted/20 opacity-60"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-light tracking-[-0.01em] text-foreground">
+                      {achievement.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {achievement.description}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full p-2 ${
+                      earned
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    <Trophy className="h-4 w-4" />
+                  </span>
                 </div>
-                <span className="rounded-full bg-primary/10 p-2 text-primary">
-                  <Trophy className="h-4 w-4" />
-                </span>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {earned
+                    ? `Unlocked ${new Date(earned.unlocked_at).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          timeZone: "UTC",
+                        },
+                      )}`
+                    : "Not unlocked yet"}
+                </p>
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Unlocked {new Date(achievement.unlocked_at).toLocaleDateString(
-                  "en-US",
-                  {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    timeZone: "UTC",
-                  },
-                )}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { User, Mail, Pencil, LogOut } from "lucide-react";
+import { User, Mail, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -25,10 +25,9 @@ export interface UserProfile {
 
 type UserProfileCardProps = {
   user: UserProfile | null;
-  onEdit: () => void;
 };
 
-const UserProfileCard = ({ user, onEdit }: UserProfileCardProps) => {
+const UserProfileCard = ({ user }: UserProfileCardProps) => {
   const router = useRouter();
   const supabase = createClient();
 
@@ -38,38 +37,30 @@ const UserProfileCard = ({ user, onEdit }: UserProfileCardProps) => {
   };
 
   return (
-    <div className="w-[320px] p-6 rounded-2xl shadow-lg bg-white text-center space-y-3">
+    <div className="w-full rounded-lg bg-card text-center space-y-3">
       <img
         src={"https://i.pravatar.cc/150"}
         alt="avatar"
-        className="w-24 h-24 rounded-full mx-auto object-cover"
+        className="w-20 h-20 rounded-full mx-auto object-cover border border-border"
       />
 
-      <h2 className="text-gray-900 font-semibold flex items-center justify-center gap-2">
+      <h2 className="text-foreground font-light tracking-[-0.01em] flex items-center justify-center gap-2">
         <User size={18} />
         {user?.full_name || "Full Name"}
       </h2>
 
-      <p className="text-gray-500 flex items-center justify-center gap-2 text-sm">
+      <p className="text-muted-foreground flex items-center justify-center gap-2 text-sm">
         <Mail size={16} />
         {user?.email || "your@email.com"}
       </p>
 
-      <p className="text-sm text-gray-700">
+      <p className="text-sm text-muted-foreground">
         {user?.bio || "No bio added yet"}
       </p>
 
       <button
-        onClick={onEdit}
-        className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
-      >
-        <Pencil size={16} />
-        Edit Profile
-      </button>
-
-      <button
         onClick={handleLogout}
-        className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition"
+        className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm font-semibold text-foreground transition hover:bg-muted"
       >
         <LogOut size={16} />
         Logout

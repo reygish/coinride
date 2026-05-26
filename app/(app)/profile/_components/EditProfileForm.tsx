@@ -1,10 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ChangeEvent } from "react";
 import { Save, X } from "lucide-react";
 
-const EditProfileForm = ({ user, onSave, onCancel }) => {
-  const [form, setForm] = useState({
+type ProfileFormValues = {
+  name: string;
+  email: string;
+  avatar: string;
+  bio: string;
+};
+
+type EditProfileFormProps = {
+  user: ProfileFormValues;
+  onSave: (form: ProfileFormValues) => void;
+  onCancel: () => void;
+  showCancel?: boolean;
+};
+
+const EditProfileForm = ({ user, onSave, onCancel, showCancel = true }: EditProfileFormProps) => {
+  const [form, setForm] = useState<ProfileFormValues>({
     name: "",
     email: "",
     avatar: "",
@@ -15,7 +29,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
     if (user) setForm(user);
   }, [user]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
@@ -23,8 +37,8 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
   };
 
   return (
-    <div className="w-full max-w-2xl p-6 rounded-2xl bg-card shadow-md space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">
+    <div className="w-full max-w-2xl p-6 rounded-lg bg-card border border-border space-y-4">
+      <h2 className="text-lg font-light tracking-[-0.02em] text-foreground">
         Edit Profile
       </h2>
 
@@ -33,7 +47,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
         value={form.name}
         onChange={handleChange}
         placeholder="Name"
-        className="w-full rounded-lg bg-muted px-4 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
       />
 
       <input
@@ -41,7 +55,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
         value={form.email}
         onChange={handleChange}
         placeholder="Email"
-        className="w-full rounded-lg bg-muted px-4 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
       />
 
       <input
@@ -49,7 +63,7 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
         value={form.avatar}
         onChange={handleChange}
         placeholder="Avatar URL"
-        className="w-full rounded-lg bg-muted px-4 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
       />
 
       <textarea
@@ -57,25 +71,26 @@ const EditProfileForm = ({ user, onSave, onCancel }) => {
         value={form.bio}
         onChange={handleChange}
         placeholder="Bio"
-        className="w-full rounded-lg bg-muted px-4 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary"
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
       />
 
       <div className="flex gap-3 pt-2">
         <button
           onClick={() => onSave(form)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition"
         >
           <Save size={16} />
           Save
         </button>
-
-        <button
-          onClick={onCancel}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-foreground hover:bg-muted transition"
-        >
-          <X size={16} />
-          Cancel
-        </button>
+        {showCancel ? (
+          <button
+            onClick={onCancel}
+            className="flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm font-semibold text-foreground hover:bg-muted transition"
+          >
+            <X size={16} />
+            Cancel
+          </button>
+        ) : null}
       </div>
     </div>
   );

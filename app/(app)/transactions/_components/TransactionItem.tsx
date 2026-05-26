@@ -28,11 +28,13 @@ function formatDate(value: string) {
 type TransactionItemProps = {
   transaction: Transaction;
   currency: string;
+  onDelete: (id: string) => void;
 };
 
 export default function TransactionItem({
   transaction,
   currency,
+  onDelete,
 }: TransactionItemProps) {
   const { categories: categoryOptions, isLoading: isCategoriesLoading } =
     useCategories();
@@ -45,10 +47,12 @@ export default function TransactionItem({
   const headline = transaction.description || "";
 
   return (
-    <div className="flex items-start justify-between rounded-2xl border border-border bg-background px-4 py-3">
+    <div className="flex items-start justify-between gap-4 rounded-lg border border-border bg-background px-4 py-3">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <p className="text-base font-medium text-foreground">{headline}</p>
+            <p className="text-base font-light tracking-[-0.01em] text-foreground">
+              {headline}
+            </p>
           {category && (
             <span
               className="rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm"
@@ -63,10 +67,22 @@ export default function TransactionItem({
           {formatDate(transaction.transaction_date)}
         </p>
       </div>
-      <p className={`text-base font-semibold ${amountClass}`}>
-        {transaction.type === "expense" ? "-" : "+"}
-        {formatCurrency(Math.abs(transaction.amount), currency)}
-      </p>
+      <div className="flex flex-col items-end gap-2">
+        <p
+          className={`text-base font-light ${amountClass}`}
+          style={{ fontVariantNumeric: "tabular-nums" }}
+        >
+          {transaction.type === "expense" ? "-" : "+"}
+          {formatCurrency(Math.abs(transaction.amount), currency)}
+        </p>
+        <button
+          type="button"
+          onClick={() => onDelete(transaction.id)}
+          className="text-xs font-semibold text-destructive hover:underline"
+        >
+          Delete
+        </button>
+      </div>
     </div>
   );
 }
