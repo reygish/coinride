@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { classifyTransaction } from "@/lib/classifier/classifyTransaction";
+import { useCategories } from "@/app/_components/providers/CategoryProvider";
 import FilterTabs from "./FIlterTabs";
 import TransactionList from "./TransactionList";
 import TransactionForm from "./TransactionForm";
@@ -34,6 +35,7 @@ export default function TransactionManager({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currency, setCurrency] = useState("IDR");
   const { user: currentUser } = useUser();
+  const { categories: categoryOptions } = useCategories();
   const supabase = createClient();
 
   useEffect(() => {
@@ -67,6 +69,14 @@ export default function TransactionManager({
   };
 
   // UPDATE FILTERED TRANSACTIONS
+  const categoryMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const cat of categoryOptions) {
+      map[cat.id] = cat.name.toLowerCase();
+    }
+    return map;
+  }, [categoryOptions]);
+
   const filteredTransactions = useMemo(() => {
     return transactions.filter((transaction) => {
       if (filter !== "all" && transaction.type !== filter) {
@@ -78,10 +88,10 @@ export default function TransactionManager({
       }
 
       const haystack =
-        `${transaction.description ?? ""} ${transaction.category_id} ${transaction.payment_method ?? ""}`.toLowerCase();
+        `${transaction.description ?? ""} ${categoryMap[transaction.category_id] ?? ""} ${transaction.payment_method ?? ""}`.toLowerCase();
       return haystack.includes(debouncedSearch);
     });
-  }, [transactions, filter, debouncedSearch]);
+  }, [transactions, filter, debouncedSearch, categoryMap]);
 
   // COUNTING INCOME AND EXPENSE
   const counts = useMemo(

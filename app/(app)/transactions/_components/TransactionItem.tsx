@@ -36,7 +36,7 @@ export default function TransactionItem({
   currency,
   onDelete,
 }: TransactionItemProps) {
-  const { categories: categoryOptions, isLoading: isCategoriesLoading } =
+  const { categories: categoryOptions } =
     useCategories();
   const amountClass =
     transaction.type === "income" ? "text-primary" : "text-destructive";

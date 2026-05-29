@@ -1,9 +1,9 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
-import { Category } from "@/types/category";
 import { classifyTransaction } from "@/lib/classifier/classifyTransaction";
 import { useCategories } from "@/app/_components/providers/CategoryProvider";
+import { parseAmount } from "@/lib/utils/parseAmount";
 import {
   TransactionFilter,
   TransactionPayload,
@@ -14,10 +14,18 @@ import CategoryDropdown from "@/components/CategoryDropdown";
 const AUTO_CATEGORY_VALUE = "__auto__";
 const ACCOUNT_OPTIONS = ["Primary Checking", "Savings", "Corporate Card"];
 
+function stripAmount(text: string) {
+  return text
+    .replace(/rp\.?\s*\d[\d.,]*/gi, " ")
+    .replace(/\b\d+(?:[.,]\d+)?\s*(?:rb|ribu|jt|juta|k|m)\b/gi, " ")
+    .replace(/\d[\d.,]*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 type FormState = {
   transaction_date: string;
   payment_method: string;
-  amount: string;
   description: string;
   category_id: string;
   type: TransactionType | null;
@@ -36,12 +44,10 @@ export default function TransactionForm({
   isSubmitting,
   onSubmit,
 }: TransactionFormProps) {
-  const { categories: categoryOptions, isLoading: isCategoriesLoading } =
-    useCategories();
+  const { categories: categoryOptions } = useCategories();
   const [formState, setFormState] = useState<FormState>({
     transaction_date: "",
     payment_method: "",
-    amount: "",
     description: "",
     category_id: "",
     type: defaultFilter === "all" ? null : defaultFilter,
@@ -72,7 +78,6 @@ export default function TransactionForm({
     setFormState({
       transaction_date: "",
       payment_method: "",
-      amount: "",
       description: "",
       category_id: "",
       type: defaultFilter === "all" ? null : defaultFilter,
@@ -84,7 +89,10 @@ export default function TransactionForm({
   const generateCategory = async () => {
     try {
       setIsAutoGenerating(true);
-      const generated = await classifyTransaction(formState.description);
+      const cleanedDescription = stripAmount(formState.description);
+      const generated = await classifyTransaction(
+        cleanedDescription || formState.description,
+      );
       const matchedCategory = categoryOptions.find(
         (cat) => cat.name.toLowerCase() === generated.toLowerCase()
       );
@@ -149,17 +157,13 @@ export default function TransactionForm({
       errors.payment_method = "Please select a payment method.";
     }
 
-    const numericAmount = Number(formState.amount);
-    if (
-      !formState.amount ||
-      Number.isNaN(numericAmount) ||
-      numericAmount <= 0
-    ) {
-      errors.amount = "Enter a valid amount.";
-    }
-
     if (!formState.description.trim()) {
       errors.description = "Description is required.";
+    }
+
+    const parsedAmount = parseAmount(formState.description);
+    if (!parsedAmount || parsedAmount <= 0) {
+      errors.description = "Include an amount in the description.";
     }
 
     if (!formState.category_id) {
@@ -184,12 +188,20 @@ export default function TransactionForm({
     }
 
     try {
-      console.log("TYPE: ", resolvedType);
+      const parsedAmount = parseAmount(formState.description);
+      if (!parsedAmount || parsedAmount <= 0) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          description: "Include an amount in the description.",
+        }));
+        return;
+      }
+      const cleanedDescription = stripAmount(formState.description);
       await onSubmit({
         transaction_date: formState.transaction_date,
         payment_method: formState.payment_method,
-        amount: Number(formState.amount),
-        description: formState.description.trim(),
+        amount: parsedAmount,
+        description: cleanedDescription || formState.description.trim(),
         category_id: formState.category_id,
         type: resolvedType,
       });
@@ -278,31 +290,9 @@ export default function TransactionForm({
         <div className="space-y-1">
           <label
             className="text-sm font-medium text-foreground"
-            htmlFor="amount"
-          >
-            Amount
-          </label>
-          <input
-            id="amount"
-            name="amount"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formState.amount}
-            onChange={handleChange}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-          />
-          {fieldErrors.amount && (
-            <p className="text-xs text-destructive">{fieldErrors.amount}</p>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          <label
-            className="text-sm font-medium text-foreground"
             htmlFor="description"
           >
-            Description
+            Description (include amount)
           </label>
           <textarea
             id="description"
@@ -310,6 +300,7 @@ export default function TransactionForm({
             rows={3}
             value={formState.description}
             onChange={handleChange}
+            placeholder="e.g. fried rice 15k"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
           />
           {fieldErrors.description && (
