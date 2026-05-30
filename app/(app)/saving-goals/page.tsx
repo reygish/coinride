@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/app/_components/providers/UserProvider";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -25,7 +24,6 @@ type GoalFormState = {
 };
 
 export default function SavingGoalsPage() {
-  const router = useRouter();
   const supabase = createClient();
   const { user } = useUser();
   const [goals, setGoals] = useState<SavingGoal[]>([]);
@@ -45,10 +43,7 @@ export default function SavingGoalsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
+    if (!user) return;
 
     const loadGoals = async () => {
       setIsLoading(true);
@@ -78,7 +73,7 @@ export default function SavingGoalsPage() {
     };
 
     loadGoals();
-  }, [router, supabase, user]);
+  }, [supabase, user]);
 
   const handleSubmit = async () => {
     if (!user) return;

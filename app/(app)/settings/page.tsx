@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/app/_components/providers/UserProvider";
 
@@ -19,7 +18,6 @@ const CURRENCY_OPTIONS = [
 ];
 
 export default function SettingsPage() {
-  const router = useRouter();
   const supabase = createClient();
   const { user } = useUser();
   const [settings, setSettings] = useState<UserSettings>({
@@ -32,10 +30,7 @@ export default function SettingsPage() {
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
+    if (!user) return;
 
     const loadSettings = async () => {
       setIsLoading(true);
@@ -56,7 +51,7 @@ export default function SettingsPage() {
     };
 
     loadSettings();
-  }, [router, supabase, user]);
+  }, [supabase, user]);
 
   const handleSave = async () => {
     if (!user) return;

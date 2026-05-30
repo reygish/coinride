@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/app/_components/providers/UserProvider";
 
@@ -15,17 +14,13 @@ type Notification = {
 };
 
 export default function NotificationsPage() {
-  const router = useRouter();
   const supabase = createClient();
   const { user } = useUser();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
+    if (!user) return;
 
     const loadNotifications = async () => {
       setIsLoading(true);
@@ -41,7 +36,7 @@ export default function NotificationsPage() {
     };
 
     loadNotifications();
-  }, [router, supabase, user]);
+  }, [supabase, user]);
 
   const markAllRead = async () => {
     if (!user) return;

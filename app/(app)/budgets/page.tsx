@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/app/_components/providers/UserProvider";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -55,7 +54,6 @@ function computeEndDate(startDate: string, period: BudgetPeriod) {
 }
 
 export default function BudgetsPage() {
-  const router = useRouter();
   const supabase = createClient();
   const { user } = useUser();
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -74,10 +72,7 @@ export default function BudgetsPage() {
   });
 
   useEffect(() => {
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
+    if (!user) return;
 
     const loadData = async () => {
       setIsLoading(true);
@@ -114,7 +109,7 @@ export default function BudgetsPage() {
     };
 
     loadData();
-  }, [router, supabase, user]);
+  }, [supabase, user]);
 
   const handleSubmit = async () => {
     if (!user) return;

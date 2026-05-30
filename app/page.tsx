@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, type Variants } from "framer-motion";
 import { ArrowUpRight, Sparkles, TrendingUp, Wallet, Target, Trophy, Flame, Zap, Medal } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const features = [
   {
@@ -52,6 +55,18 @@ function formatIDR(n: number) {
 }
 
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    createClient()
+      .auth.getSession()
+      .then(({ data }) => {
+        if (data.session) {
+          router.replace("/dashboard");
+        }
+      });
+  }, [router]);
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       {/* ── Hero band ── */}

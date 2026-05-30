@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Trophy } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/app/_components/providers/UserProvider";
 
@@ -41,17 +40,13 @@ const ALL_ACHIEVEMENTS = [
 ];
 
 export default function AchievementsPage() {
-  const router = useRouter();
   const supabase = createClient();
   const { user } = useUser();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
+    if (!user) return;
 
     const loadAchievements = async () => {
       setIsLoading(true);
@@ -67,7 +62,7 @@ export default function AchievementsPage() {
     };
 
     loadAchievements();
-  }, [router, supabase, user]);
+  }, [supabase, user]);
 
   return (
     <div className="space-y-6 p-6">

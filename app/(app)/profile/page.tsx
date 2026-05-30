@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import EditProfileForm from "./_components/EditProfileForm";
 import UserProfileCard, {
@@ -17,17 +16,12 @@ type ProfileFormValues = {
 };
 
 export default function Page() {
-  const router = useRouter();
   const supabase = createClient();
   const { user: currentUser } = useUser();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const loadProfile = async () => {
-    // protect route
-    if (!currentUser) {
-      router.replace("/login");
-      return;
-    }
+    if (!currentUser) return;
 
     const { data } = await supabase
       .from("user_profiles")
