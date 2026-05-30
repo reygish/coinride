@@ -1,22 +1,19 @@
 import { createClient } from "@/lib/supabase/client";
 import { Category } from "../../types/category";
-import { getAuthedServerClient } from "../auth/auth";
 
 const TABLE = "categories";
 
 // GET ALL CATEGORIES
-export async function getCategories(): Promise<Category[]> {
-  const { user, error: authError } = await getAuthedServerClient();
-  if (authError) {
+export async function getCategories(userId: string | null | undefined): Promise<Category[]> {
+  if (!userId) {
     return [];
   }
-
   const supabase = createClient();
 
   const { data, error } = await supabase
     .from(TABLE)
     .select("*")
-    .or(`user_id.is.null,user_id.eq.${user.id}`)
+    .or(`user_id.is.null,user_id.eq.${userId}`)
     .order("name", { ascending: true });
 
   if (error) {

@@ -108,15 +108,9 @@ export default function TransactionManager({
     setIsSubmitting(true);
     setError(null);
 
-    const Transaction: Transaction = {
-      id: "",
-      user_id: "",
-      ...payload,
-    };
-
     try {
       const result = await createTransaction(payload);
-      setTransactions((prev) => [Transaction, ...prev]);
+      setTransactions((prev) => [result, ...prev]);
       window.dispatchEvent(new Event("coinride:xp-updated"));
       window.dispatchEvent(new Event("coinride:balance-updated"));
     } catch (createError) {

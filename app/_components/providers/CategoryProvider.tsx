@@ -9,6 +9,7 @@ import {
 } from "react";
 import { Category } from "@/types/category";
 import { getCategories } from "@/lib/category/queries";
+import { useUser } from "@/app/_components/providers/UserProvider";
 
 interface CategoryContextType {
   categories: Category[];
@@ -21,13 +22,14 @@ const CategoryContext = createContext<CategoryContextType | undefined>(
 );
 
 export function CategoryProvider({ children }: { children: ReactNode }) {
+  const { user } = useUser();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCategories = async () => {
     setIsLoading(true);
     try {
-      const data = await getCategories();
+      const data = await getCategories(user?.id);
       setCategories(data);
     } catch (error) {
       console.error("Failed to fetch categories", error);
@@ -38,7 +40,7 @@ export function CategoryProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [user?.id]);
 
   return (
     <CategoryContext.Provider
