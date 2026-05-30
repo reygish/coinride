@@ -21,32 +21,31 @@ import {
   CategorySummary,
 } from "@/app/(app)/dashboard/_lib/categorySummary";
 import { useUser } from "@/app/_components/providers/UserProvider";
-
-/** Custom tooltip yang muncul saat hover segment chart */
-function CustomTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: Array<{ name: string; value: number; payload: { color: string } }>;
-}) {
-  if (!active || !payload?.length) return null;
-
-  const item = payload[0];
-  return (
-    <div className="rounded-xl border border-white/10 bg-[#0F1628] px-4 py-3 shadow-2xl">
-      <p className="text-sm font-semibold text-slate-200">{item.name}</p>
-      <p className="mt-1 text-base font-bold text-emerald-400">
-        {formatCurrency(item.value)}
-      </p>
-    </div>
-  );
-}
+import { createClient } from "@/lib/supabase/client";
 
 export function SpendingChart() {
   const { user } = useUser();
+  const supabase = createClient();
   const [summaries, setSummaries] = useState<CategorySummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currency, setCurrency] = useState("IDR");
+
+  useEffect(() => {
+    const loadCurrency = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("currency")
+        .eq("user_id", user.id)
+        .single();
+
+      if (data?.currency) {
+        setCurrency(data.currency);
+      }
+    };
+
+    loadCurrency();
+  }, [supabase, user]);
 
   useEffect(() => {
     async function loadData() {
@@ -88,6 +87,29 @@ export function SpendingChart() {
     );
   }
 
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number; payload: { color: string } }>;
+  }) => {
+    if (!active || !payload?.length) return null;
+
+    const item = payload[0];
+    return (
+      <div className="rounded-md border border-border bg-card px-4 py-3 shadow-[rgba(0,55,112,0.08)_0_8px_24px,rgba(0,55,112,0.04)_0_2px_6px]">
+        <p className="text-sm font-light text-foreground">{item.name}</p>
+        <p
+          className="mt-1 text-base font-light text-foreground"
+          style={{ fontVariantNumeric: "tabular-nums" }}
+        >
+          {formatCurrency(item.value, currency)}
+        </p>
+      </div>
+    );
+  };
+
   return (
     <ResponsiveContainer width="100%" height={280}>
       <PieChart>
@@ -107,7 +129,7 @@ export function SpendingChart() {
           iconType="circle"
           iconSize={8}
           formatter={(value) => (
-            <span className="text-xs text-slate-400">{value}</span>
+            <span className="text-xs text-muted-foreground">{value}</span>
           )}
         />
       </PieChart>

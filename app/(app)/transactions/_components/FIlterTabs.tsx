@@ -1,6 +1,6 @@
 "use client";
 
-import { TransactionFilter } from "./types";
+import { TransactionFilter } from "../_lib/types";
 
 type FilterTabsProps = {
   activeFilter: TransactionFilter;

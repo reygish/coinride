@@ -1,11 +1,14 @@
 "use client";
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { classifyTransaction } from "@/lib/classifier/classifyTransaction";
+import { useCategories } from "@/app/_components/providers/CategoryProvider";
 import FilterTabs from "./FIlterTabs";
 import TransactionList from "./TransactionList";
 import TransactionForm from "./TransactionForm";
-import { createTransaction } from "../_lib/queries";
+import { createTransaction, deleteTransaction } from "../_lib/queries";
+import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@/app/_components/providers/UserProvider";
 import {
   Transaction,
   TransactionFilter,
@@ -30,6 +33,27 @@ export default function TransactionManager({
   const [isLoading, setIsLoading] = useState(initialTransactions.length === 0);
   const [isRefetching, setIsRefetching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currency, setCurrency] = useState("IDR");
+  const { user: currentUser } = useUser();
+  const { categories: categoryOptions } = useCategories();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const loadCurrency = async () => {
+      if (!currentUser) return;
+      const { data } = await supabase
+        .from("user_profiles")
+        .select("currency")
+        .eq("user_id", currentUser.id)
+        .single();
+
+      if (data?.currency) {
+        setCurrency(data.currency);
+      }
+    };
+
+    loadCurrency();
+  }, [currentUser, supabase]);
 
   // SEARCH
   useEffect(() => {
@@ -45,6 +69,14 @@ export default function TransactionManager({
   };
 
   // UPDATE FILTERED TRANSACTIONS
+  const categoryMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const cat of categoryOptions) {
+      map[cat.id] = cat.name.toLowerCase();
+    }
+    return map;
+  }, [categoryOptions]);
+
   const filteredTransactions = useMemo(() => {
     return transactions.filter((transaction) => {
       if (filter !== "all" && transaction.type !== filter) {
@@ -56,10 +88,10 @@ export default function TransactionManager({
       }
 
       const haystack =
-        `${transaction.description ?? ""} ${transaction.category_id} ${transaction.payment_method ?? ""}`.toLowerCase();
+        `${transaction.description ?? ""} ${categoryMap[transaction.category_id] ?? ""} ${transaction.payment_method ?? ""}`.toLowerCase();
       return haystack.includes(debouncedSearch);
     });
-  }, [transactions, filter, debouncedSearch]);
+  }, [transactions, filter, debouncedSearch, categoryMap]);
 
   // COUNTING INCOME AND EXPENSE
   const counts = useMemo(
@@ -76,18 +108,29 @@ export default function TransactionManager({
     setIsSubmitting(true);
     setError(null);
 
-    const Transaction: Transaction = {
-      id: "",
-      user_id: "",
-      ...payload,
-    };
-
     try {
       const result = await createTransaction(payload);
-      setTransactions((prev) => [Transaction, ...prev]);
+      setTransactions((prev) => [result, ...prev]);
+      window.dispatchEvent(new Event("coinride:xp-updated"));
+      window.dispatchEvent(new Event("coinride:balance-updated"));
     } catch (createError) {
       setError("We could not save the transaction. Please try again.");
       console.error(createError);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await deleteTransaction(id);
+      setTransactions((prev) => prev.filter((item) => item.id !== id));
+      window.dispatchEvent(new Event("coinride:balance-updated"));
+    } catch (deleteError) {
+      setError("We could not delete the transaction. Please try again.");
+      console.error(deleteError);
     } finally {
       setIsSubmitting(false);
     }
@@ -101,9 +144,9 @@ export default function TransactionManager({
           counts={counts}
           onFilterChange={setFilter}
         />
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="rounded-lg border border-border bg-card p-5">
           <div className="space-y-1">
-            <h2 className="text-lg font-medium text-foreground">
+            <h2 className="text-lg font-light tracking-[-0.02em] text-foreground">
               Add Transaction
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -122,8 +165,8 @@ export default function TransactionManager({
       </div>
 
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex w-full items-center gap-2 rounded-xl border border-input bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring sm:w-auto">
+        <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex w-full items-center gap-2 rounded-md border border-input bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-ring sm:w-auto">
             <svg
               aria-hidden="true"
               viewBox="0 0 20 20"
@@ -156,6 +199,8 @@ export default function TransactionManager({
           transactions={filteredTransactions}
           loading={isLoading}
           error={error}
+          currency={currency}
+          onDelete={handleDeleteTransaction}
           // onRetry={() => refreshTransactions()}
         />
       </div>

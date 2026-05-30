@@ -53,6 +53,7 @@ begin
   insert into public.user_profiles (
     user_id,
     full_name,
+    email,
     total_balance,
     available_balance,
     currency,
@@ -62,6 +63,7 @@ begin
   values (
     new.id,
     new.raw_user_meta_data->>'full_name',
+    new.email,
     0,
     0,
     'IDR',

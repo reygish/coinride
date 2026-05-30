@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import {
-  BarChart3,
   Bell,
+  Flame,
   LayoutDashboard,
   Medal,
   PiggyBank,
@@ -15,11 +15,15 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@/app/_components/providers/UserProvider";
 import ThemeToggle from "./ThemeToggle";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
 type SidebarProps = {
   className?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 };
 
 type NavItem = {
@@ -50,13 +54,11 @@ const NAV: NavSection[] = [
         label: "Budgets",
         href: "/budgets",
         icon: Target,
-        disabled: true,
       },
       {
         label: "Saving Goals",
         href: "/saving-goals",
         icon: PiggyBank,
-        disabled: true,
       },
     ],
   },
@@ -67,13 +69,11 @@ const NAV: NavSection[] = [
         label: "Achievements",
         href: "/achievements",
         icon: Trophy,
-        disabled: true,
       },
       {
         label: "Leaderboard",
         href: "/leaderboard",
         icon: Medal,
-        disabled: true,
       },
     ],
   },
@@ -84,14 +84,12 @@ const NAV: NavSection[] = [
         label: "Notifications",
         href: "/notifications",
         icon: Bell,
-        disabled: true,
       },
       { label: "Profile", href: "/profile", icon: User },
       {
         label: "Settings",
         href: "/settings",
         icon: Settings,
-        disabled: true,
       },
     ],
   },
@@ -99,7 +97,7 @@ const NAV: NavSection[] = [
 
 function SidebarItem({ label, href, icon: Icon, disabled }: NavItem) {
   const baseClassName =
-    "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-foreground transition";
+    "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-foreground transition";
 
   if (!href || disabled) {
     return (
@@ -124,25 +122,26 @@ function SidebarItem({ label, href, icon: Icon, disabled }: NavItem) {
   );
 }
 
-export default function Sidebar({ className }: SidebarProps) {
+export default function Sidebar({ className, isOpen, onClose }: SidebarProps) {
   const { streak, level, xpInCurrentLevel, xpToNextLevel, unlockedCount } =
     useGamification();
 
-  return (
-    <aside
-      className={cn(
-        "min-h-0 w-72 shrink-0 overflow-y-auto border-r border-border bg-card",
-        "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
-        className,
-      )}
-    >
-      {/* level */}
-      <div className="mx-3 mt-4 rounded-xl bg-gradient-to-br from-violet-500/15 to-emerald-500/10 border border-white/8 p-4">
+  const sidebarContent = (
+    <>
+      <div className="mx-3 mt-4 rounded-lg border border-border bg-card p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Level {level}
           </span>
-          <span className="text-xs text-slate-400">{unlockedCount} badges</span>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Flame className="h-3 w-3 text-orange-500" />
+              {streak}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {unlockedCount} badges
+            </span>
+          </div>
         </div>
         <ProgressBar
           value={xpInCurrentLevel}
@@ -150,7 +149,10 @@ export default function Sidebar({ className }: SidebarProps) {
           color="purple"
           size="sm"
         />
-        <p className="mt-1.5 text-xs text-slate-500">
+        <p
+          className="mt-1.5 text-xs text-muted-foreground"
+          style={{ fontVariantNumeric: "tabular-nums" }}
+        >
           {xpInCurrentLevel} / {xpToNextLevel} XP to Level {level + 1}
         </p>
       </div>
@@ -159,7 +161,7 @@ export default function Sidebar({ className }: SidebarProps) {
         <nav className="space-y-6">
           {NAV.map((section) => (
             <div key={section.title} className="space-y-2">
-              <h2 className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <h2 className="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                 {section.title}
               </h2>
               <div className="">
@@ -177,7 +179,35 @@ export default function Sidebar({ className }: SidebarProps) {
           ))}
         </nav>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      {isOpen ? (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={onClose}
+          />
+          <aside className="relative z-50 h-full w-72 overflow-y-auto border-r border-border bg-background shadow-xl">
+            {sidebarContent}
+          </aside>
+        </div>
+      ) : null}
+
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden min-h-0 w-72 shrink-0 overflow-y-auto border-r border-border bg-background lg:block",
+          "[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40",
+          className,
+        )}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }
 function useGamification(): {
@@ -187,6 +217,8 @@ function useGamification(): {
   xpToNextLevel: number;
   unlockedCount: number;
 } {
+  const supabase = createClient();
+  const { user } = useUser();
   const [streak, setStreak] = useState<number>(0);
   const [level, setLevel] = useState<number>(1);
   const [xpInCurrentLevel, setXpInCurrentLevel] = useState<number>(0);
@@ -194,43 +226,40 @@ function useGamification(): {
   const [unlockedCount, setUnlockedCount] = useState<number>(0);
 
   useEffect(() => {
-    // Simple local/demo implementation. In a real app this would come from an API or global state.
-    try {
-      const rawTotalXP = localStorage.getItem("totalXP");
-      const totalXP = rawTotalXP ? parseInt(rawTotalXP, 10) : 1250; // default demo XP
+    if (!user) return;
+    const loadGamification = async () => {
       const xpPerLevel = 1000;
+      const [{ data: profile }, { data: achievements }] = await Promise.all([
+        supabase
+          .from("user_profiles")
+          .select("total_xp,level,streak_count")
+          .eq("user_id", user.id)
+          .single(),
+        supabase
+          .from("achievements")
+          .select("id")
+          .eq("user_id", user.id),
+      ]);
 
-      const computedLevel = Math.floor(totalXP / xpPerLevel) + 1;
-      const computedXpInLevel = totalXP % xpPerLevel;
+      const totalXp = Number(profile?.total_xp ?? 0);
+      const computedLevel = Number(profile?.level ?? 1) || 1;
+      const computedXpInLevel = totalXp % xpPerLevel;
 
       setLevel(computedLevel);
       setXpInCurrentLevel(computedXpInLevel);
       setXpToNextLevel(xpPerLevel);
+      setStreak(Number(profile?.streak_count ?? 0));
+      setUnlockedCount(Array.isArray(achievements) ? achievements.length : 0);
+    };
 
-      const rawStreak = localStorage.getItem("streak");
-      setStreak(rawStreak ? parseInt(rawStreak, 10) : 3);
+    loadGamification();
+    const handleXpUpdate = () => {
+      loadGamification();
+    };
 
-      const rawBadges = localStorage.getItem("badges");
-      // badges stored as JSON array of ids/names in localStorage for demo
-      if (rawBadges) {
-        try {
-          const parsed = JSON.parse(rawBadges);
-          setUnlockedCount(Array.isArray(parsed) ? parsed.length : 0);
-        } catch {
-          setUnlockedCount(0);
-        }
-      } else {
-        setUnlockedCount(4);
-      }
-    } catch (e) {
-      // fallback defaults
-      setStreak(0);
-      setLevel(1);
-      setXpInCurrentLevel(0);
-      setXpToNextLevel(1000);
-      setUnlockedCount(0);
-    }
-  }, []);
+    window.addEventListener("coinride:xp-updated", handleXpUpdate);
+    return () => window.removeEventListener("coinride:xp-updated", handleXpUpdate);
+  }, [supabase, user]);
 
   return { streak, level, xpInCurrentLevel, xpToNextLevel, unlockedCount };
 }

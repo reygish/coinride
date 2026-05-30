@@ -3,29 +3,40 @@
 import { useCategories } from "@/app/_components/providers/CategoryProvider";
 import { Transaction } from "../_lib/types";
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-});
+const DEFAULT_LOCALE = "id-ID";
+
+function formatCurrency(amount: number, currency: string) {
+  return new Intl.NumberFormat(DEFAULT_LOCALE, {
+    style: "currency",
+    currency,
+  }).format(amount);
+}
 
 function formatDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return date.toLocaleDateString(undefined, {
+  return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   });
 }
 
 type TransactionItemProps = {
   transaction: Transaction;
+  currency: string;
+  onDelete: (id: string) => void;
 };
 
-export default function TransactionItem({ transaction }: TransactionItemProps) {
-  const { categories: categoryOptions, isLoading: isCategoriesLoading } =
+export default function TransactionItem({
+  transaction,
+  currency,
+  onDelete,
+}: TransactionItemProps) {
+  const { categories: categoryOptions } =
     useCategories();
   const amountClass =
     transaction.type === "income" ? "text-primary" : "text-destructive";
@@ -36,10 +47,12 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
   const headline = transaction.description || "";
 
   return (
-    <div className="flex items-start justify-between rounded-2xl border border-border bg-background px-4 py-3">
+    <div className="flex items-start justify-between gap-4 rounded-lg border border-border bg-background px-4 py-3">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <p className="text-base font-medium text-foreground">{headline}</p>
+            <p className="text-base font-light tracking-[-0.01em] text-foreground">
+              {headline}
+            </p>
           {category && (
             <span
               className="rounded-full px-2 py-0.5 text-xs font-medium text-white shadow-sm"
@@ -54,10 +67,22 @@ export default function TransactionItem({ transaction }: TransactionItemProps) {
           {formatDate(transaction.transaction_date)}
         </p>
       </div>
-      <p className={`text-base font-semibold ${amountClass}`}>
-        {transaction.type === "expense" ? "-" : "+"}
-        {currencyFormatter.format(Math.abs(transaction.amount))}
-      </p>
+      <div className="flex flex-col items-end gap-2">
+        <p
+          className={`text-base font-light ${amountClass}`}
+          style={{ fontVariantNumeric: "tabular-nums" }}
+        >
+          {transaction.type === "expense" ? "-" : "+"}
+          {formatCurrency(Math.abs(transaction.amount), currency)}
+        </p>
+        <button
+          type="button"
+          onClick={() => onDelete(transaction.id)}
+          className="text-xs font-semibold text-destructive hover:underline"
+        >
+          Delete
+        </button>
+      </div>
     </div>
   );
 }
