@@ -4,7 +4,7 @@
 
 # CoinRide — AI-Powered Money Management App
 
-A personal finance tracker built with **Next.js** and **Supabase**, featuring an AI model hosted on **Hugging Face Spaces** that automatically classifies your transactions into categories.
+A personal finance tracker built with **Next.js** and **Supabase**, featuring an AI model hosted on **Hugging Face Spaces** that automatically classifies your transactions into categories. For more details about this project, refer to [DOCUMENTATION.md](DOCUMENTATION.md).
 
 ---
 
